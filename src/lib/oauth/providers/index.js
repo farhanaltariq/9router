@@ -2,69 +2,33 @@
 import "open-sse/index.js";
 
 import { generatePKCE } from "../utils/pkce.js";
-import { extractCodexAccountInfo, fetchKiroProfileArn } from "../providerHelpers.js";
+import { extractCodexAccountInfo } from "../providerHelpers.js";
 
-import claude from "./claude.js";
 import codex from "./codex.js";
-import xai from "./xai.js";
-import grokCli from "./grok-cli.js";
-import geminiCli from "./gemini-cli.js";
 import antigravity from "./antigravity.js";
-import iflow from "./iflow.js";
-import qoder from "./qoder.js";
 import github from "./github.js";
-import kiro from "./kiro.js";
-import cursor from "./cursor.js";
-import kimi from "./kimi.js";
-import kilocode from "./kilocode.js";
-import cline from "./cline.js";
-import clinepass from "./clinepass.js";
-import gitlab from "./gitlab.js";
 import codebuddyCn from "./codebuddy-cn.js";
 import codebuddyIntl from "./codebuddy-intl.js";
-import kimchi from "./kimchi.js";
-import trae from "./trae.js";
-import windsurf from "./windsurf.js";
-import zed from "./zed.js";
 
 // Provider configurations
 const PROVIDERS = {
-  claude,
   codex,
-  xai,
-  "grok-cli": grokCli,
-  "gemini-cli": geminiCli,
   antigravity,
-  iflow,
-  qoder,
   github,
-  kiro,
-  cursor,
-  kimi,
-  kilocode,
-  cline,
-  clinepass,
-  gitlab,
   "codebuddy-cn": codebuddyCn,
   "codebuddy-intl": codebuddyIntl,
-  kimchi,
-  trae,
-  windsurf,
-  zed,
 };
 
 export { PROVIDERS };
 
 // Re-export helpers that other files import from this path
-export { extractCodexAccountInfo, fetchKiroProfileArn };
+export { extractCodexAccountInfo };
 
 /**
  * Get provider handler
  */
 export function getProvider(name) {
-  // Legacy kimi-coding → kimi (dual-auth merge)
-  const key = name === "kimi-coding" ? "kimi" : name;
-  const provider = PROVIDERS[key];
+  const provider = PROVIDERS[name];
   if (!provider) {
     throw new Error(`Unknown provider: ${name}`);
   }
@@ -80,7 +44,7 @@ export function getProviderNames() {
 
 /**
  * Generate auth data for a provider
- * @param {object} [meta] - Provider-specific metadata (e.g. gitlab clientId/baseUrl)
+ * @param {object} [meta] - Provider-specific metadata
  */
 export async function generateAuthData(providerName, redirectUri, meta) {
   const provider = getProvider(providerName);
@@ -88,10 +52,8 @@ export async function generateAuthData(providerName, redirectUri, meta) {
     ? await provider.prepareConfig(provider.config, meta || {})
     : provider.config;
   const { codeVerifier: pkceVerifier, codeChallenge, state: pkceState } = generatePKCE(provider.pkceVerifierBytes);
-  // Trae uses loginTraceID (set by prepareConfig) as the callback matcher, not PKCE state.
-  const state = config.loginTraceID || pkceState;
-  // Zed: codeVerifier carries the encoded RSA private key (from prepareConfig), not a PKCE verifier.
-  const codeVerifier = config.privateKeyVerifier || pkceVerifier;
+  const state = pkceState;
+  const codeVerifier = pkceVerifier;
 
   let authUrl;
   if (provider.flowType === "device_code") {
@@ -117,7 +79,7 @@ export async function generateAuthData(providerName, redirectUri, meta) {
 
 /**
  * Exchange code for tokens
- * @param {object} [meta] - Provider-specific metadata (e.g. gitlab clientId/baseUrl)
+ * @param {object} [meta] - Provider-specific metadata
  */
 export async function exchangeTokens(providerName, code, redirectUri, codeVerifier, state, meta) {
   const provider = getProvider(providerName);
@@ -151,7 +113,7 @@ export async function requestDeviceCode(providerName, codeChallenge, options) {
  * @param {string} providerName - Provider name
  * @param {string} deviceCode - Device code from requestDeviceCode
  * @param {string} codeVerifier - PKCE code verifier (optional for some providers)
- * @param {object} extraData - Extra data from device code response (e.g. clientId/clientSecret for Kiro)
+ * @param {object} extraData - Extra data from device code response
  */
 export async function pollForToken(providerName, deviceCode, codeVerifier, extraData) {
   const provider = getProvider(providerName);
@@ -169,13 +131,7 @@ export async function pollForToken(providerName, deviceCode, codeVerifier, extra
       if (provider.postExchange) {
         extra = await provider.postExchange(result.data);
       }
-      const tokens = provider.mapTokens(result.data, extra);
-      // Kiro IDC/Builder-ID tokens lack profileArn; resolve it to avoid 403
-      if (providerName === "kiro" && !tokens.providerSpecificData?.profileArn) {
-        const profileArn = await fetchKiroProfileArn(tokens.accessToken);
-        if (profileArn) tokens.providerSpecificData.profileArn = profileArn;
-      }
-      return { success: true, tokens };
+      return { success: true, tokens: provider.mapTokens(result.data, extra) };
     } else {
       // Check if it's still pending authorization
       if (result.data.error === 'authorization_pending' || result.data.error === 'slow_down') {
@@ -218,22 +174,19 @@ export async function backfillCodexEmails() {
     });
     for (const conn of targets) {
       const info = extractCodexAccountInfo(conn.idToken);
-      if (!info.email && !info.chatgptAccountId) continue;
-      const patch = {};
-      if (!conn.email && info.email) patch.email = info.email;
-      if (info.chatgptAccountId || info.chatgptPlanType) {
-        patch.providerSpecificData = {
+      const update = {};
+      if (!conn.email && info.email) update.email = info.email;
+      if (!conn.providerSpecificData?.chatgptAccountId && info.chatgptAccountId) {
+        update.providerSpecificData = {
           ...(conn.providerSpecificData || {}),
           chatgptAccountId: info.chatgptAccountId,
-          chatgptPlanType: info.chatgptPlanType,
         };
       }
-      if (Object.keys(patch).length) {
-        await updateProviderConnection(conn.id, patch);
+      if (Object.keys(update).length > 0) {
+        await updateProviderConnection(conn.id, update);
       }
     }
-  } catch (err) {
-    codexBackfillDone = false;
-    console.log("backfillCodexEmails failed:", err?.message || err);
+  } catch {
+    // Backfill is best-effort; never block startup.
   }
 }

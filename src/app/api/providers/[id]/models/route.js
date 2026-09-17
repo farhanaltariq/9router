@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getProviderConnectionById } from "@/models";
 import { isOpenAICompatibleProvider, isAnthropicCompatibleProvider } from "@/shared/constants/providers";
-import { GEMINI_CONFIG } from "@/lib/oauth/constants/oauth";
+import { GOOGLE_OAUTH_CLIENT } from "open-sse/providers/shared.js";
 import { refreshGoogleToken, refreshCodexToken, updateProviderCredentials } from "@/sse/services/tokenRefresh";
 import { resolveOllamaLocalHost } from "open-sse/config/providers.js";
 import { getModelsByProviderId } from "open-sse/config/providerModels.js";
@@ -402,7 +402,7 @@ const PROVIDER_MODELS_CONFIG = {
   },
   "gemini-cli": {
     customResolver: buildOAuthResolver({
-      refreshFn: (conn) => refreshGoogleToken(conn.refreshToken, GEMINI_CONFIG.clientId, GEMINI_CONFIG.clientSecret),
+      refreshFn: (conn) => refreshGoogleToken(conn.refreshToken, GOOGLE_OAUTH_CLIENT.clientId, GOOGLE_OAUTH_CLIENT.clientSecret),
       fetchFn: (token, conn) => {
         const projectId = conn.projectId || conn.providerSpecificData?.projectId;
         const body = projectId ? { project: projectId } : {};

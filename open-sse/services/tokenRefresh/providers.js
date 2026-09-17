@@ -4,28 +4,39 @@ import { proxyAwareFetch } from "../../utils/proxyFetch.js";
 import { dedupRefresh } from "./dedup.js";
 import { buildExternalIdpRefreshParams } from "../../../src/lib/oauth/kiroExternalIdp.js";
 
-let _xaiServiceSingleton = null;
 export async function refreshXaiToken(refreshToken, log) {
   if (!refreshToken) return null;
+  const xai = PROVIDER_OAUTH["xai"];
+  if (!xai?.tokenUrl) return null;
   return dedupRefresh("xai", refreshToken, async () => {
     try {
-      if (!_xaiServiceSingleton) {
-        const mod = await import("../../../src/lib/oauth/services/xai.js");
-        _xaiServiceSingleton = new mod.XaiService();
+      const body = new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+      });
+      body.set("client_id", xai.clientId);
+      if (xai.clientSecret) body.set("client_secret", xai.clientSecret);
+      const res = await proxyAwareFetch(xai.tokenUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+      });
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        if (res.status === 400 && (text.includes("invalid_grant") || text.includes("invalid_request"))) {
+          return { error: "invalid_grant" };
+        }
+        return null;
       }
-      const tokens = await _xaiServiceSingleton.refreshAccessToken(refreshToken);
+      const data = await res.json();
       return {
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token || refreshToken,
-        expiresIn: tokens.expires_in,
-        idToken: tokens.id_token,
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token || refreshToken,
+        expiresIn: data.expires_in,
+        idToken: data.id_token,
       };
     } catch (e) {
       log?.warn?.("TOKEN_REFRESH", `xai refresh failed: ${e?.message || e}`);
-      const msg = String(e?.message || "");
-      if (msg.includes("invalid_grant") || msg.includes("invalid_request")) {
-        return { error: "invalid_grant" };
-      }
       return null;
     }
   }, log);

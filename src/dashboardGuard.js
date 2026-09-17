@@ -42,8 +42,6 @@ const ALWAYS_PROTECTED = [
   "/api/settings/database",
   "/api/version/shutdown",
   "/api/version/update",
-  "/api/oauth/cursor/auto-import",
-  "/api/oauth/kiro/auto-import",
 ];
 
 // Require auth, but allow through if requireLogin is disabled
@@ -67,8 +65,6 @@ const PROTECTED_API_PATHS = [
 // Routes that spawn child processes or read host secrets — restrict to localhost.
 const LOCAL_ONLY_PATHS = [
   "/api/mcp/",
-  "/api/oauth/cursor/auto-import",
-  "/api/oauth/kiro/auto-import",
   "/api/auth/reset-password",
   "/api/headroom/start",
   "/api/headroom/stop",

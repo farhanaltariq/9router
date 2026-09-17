@@ -38,12 +38,22 @@ function buildProviderEntry(r) {
   };
 }
 
-const byCategory = (cat) => Object.fromEntries(
-  REGISTRY.filter(r => r.category === cat).map(r => [r.id, buildProviderEntry(r)])
+// ponytail: dashboard/provider allowlist — filter at UI constant layer, registry untouched.
+// Upgrade path: per-category allowlists if more UI surfaces need curation.
+const OAUTH_ALLOWLIST = new Set(["antigravity", "github", "codex", "codebuddy-intl", "codebuddy-cn"]);
+const FREE_TIER_ALLOWLIST = new Set(["nvidia", "ollama", "cloudflare-ai"]);
+const APIKEY_ALLOWLIST = new Set();
+const FREE_ALLOWLIST = new Set();
+const WEB_COOKIE_ALLOWLIST = new Set();
+
+const byCategory = (cat, allowlist) => Object.fromEntries(
+  REGISTRY
+    .filter(r => r.category === cat && (!allowlist || allowlist.has(r.id)))
+    .map(r => [r.id, buildProviderEntry(r)])
 );
 
-export const FREE_PROVIDERS = byCategory("free");
-export const FREE_TIER_PROVIDERS = byCategory("freeTier");
+export const FREE_PROVIDERS = byCategory("free", FREE_ALLOWLIST);
+export const FREE_TIER_PROVIDERS = byCategory("freeTier", FREE_TIER_ALLOWLIST);
 
 // Thinking config definitions
 // options: list of selectable modes ("auto" = no override from server)
@@ -62,11 +72,11 @@ export const THINKING_CONFIG = {
   }
 };
 
-export const OAUTH_PROVIDERS = byCategory("oauth");
-export const APIKEY_PROVIDERS = byCategory("apikey");
+export const OAUTH_PROVIDERS = byCategory("oauth", OAUTH_ALLOWLIST);
+export const APIKEY_PROVIDERS = byCategory("apikey", APIKEY_ALLOWLIST);
 
 // Web Cookie Providers (use browser session cookie instead of API key)
-export const WEB_COOKIE_PROVIDERS = byCategory("webCookie");
+export const WEB_COOKIE_PROVIDERS = byCategory("webCookie", WEB_COOKIE_ALLOWLIST);
 
 export const OPENAI_COMPATIBLE_PREFIX = "openai-compatible-";
 export const ANTHROPIC_COMPATIBLE_PREFIX = "anthropic-compatible-";
