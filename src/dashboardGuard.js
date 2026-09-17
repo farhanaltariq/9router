@@ -23,7 +23,6 @@ async function hasValidCliToken(request) {
 const PUBLIC_API_PATHS = [
   "/api/health",
   "/api/init",
-  "/api/locale",
   "/api/auth/login",
   "/api/auth/logout",
   "/api/auth/status",
@@ -59,12 +58,11 @@ const PROTECTED_API_PATHS = [
   "/api/usage",
   "/api/oauth",
   "/api/cloud",
-  "/api/media-providers",
   "/api/pricing",
   "/api/tags",
   "/api/cli-tools",
   "/api/mcp",
-  "/api/translator",
+  "/api/console-logs",
   "/api/tunnel",
 ];
 

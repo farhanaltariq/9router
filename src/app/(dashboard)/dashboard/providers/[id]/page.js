@@ -11,7 +11,6 @@ import { getModelsByProviderId, getModelKind } from "@/shared/constants/models";
 import { getThinkingLevels } from "open-sse/providers/thinkingLevels.js";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 import { useModelCaps } from "@/shared/hooks/useModelCaps";
-import { translate } from "@/i18n/runtime";
 import { fetchSuggestedModels } from "@/shared/utils/providerModelsFetcher";
 import { getProviderCustomModelRows } from "@/shared/utils/providerCustomModels";
 import ModelRow from "./ModelRow";
@@ -571,7 +570,7 @@ export default function ProviderDetailPage() {
     if (importingQoderModels) return;
     const activeConnection = connections.find((conn) => conn.isActive !== false);
     if (!activeConnection) {
-      alert(translate("Please add an active Qoder connection first"));
+      alert("Please add an active Qoder connection first");
       return;
     }
 
@@ -580,12 +579,12 @@ export default function ProviderDetailPage() {
       const res = await fetch(`/api/providers/${activeConnection.id}/models`);
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || translate("Failed to fetch models"));
+        alert(data.error || "Failed to fetch models");
         return;
       }
       const models = data.models || [];
       if (models.length === 0) {
-        alert(translate("No models returned"));
+        alert("No models returned");
         return;
       }
 
@@ -608,13 +607,13 @@ export default function ProviderDetailPage() {
       }
       
       if (importedCount === 0) {
-        alert(translate("All models already exist, no new models added"));
+        alert("All models already exist, no new models added");
       } else {
-        alert(translate("Successfully added") + ` ${importedCount} ` + translate("models"));
+        alert("Successfully added" + ` ${importedCount} ` + "models");
       }
     } catch (error) {
       console.log("Error importing Qoder models:", error);
-      alert(translate("Error fetching models") + ": " + error.message);
+      alert("Error fetching models" + ": " + error.message);
     } finally {
       setImportingQoderModels(false);
     }
@@ -625,7 +624,7 @@ export default function ProviderDetailPage() {
     if (importingClineModels) return;
     const activeConnection = connections.find((conn) => conn.isActive !== false);
     if (!activeConnection) {
-      alert(translate("Please add an active Cline connection first"));
+      alert("Please add an active Cline connection first");
       return;
     }
     setImportingClineModels(true);
@@ -633,12 +632,12 @@ export default function ProviderDetailPage() {
       const res = await fetch(`/api/providers/${activeConnection.id}/models`);
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error || translate("Failed to fetch models"));
+        alert(data.error || "Failed to fetch models");
         return;
       }
       const models = data.models || [];
       if (models.length === 0) {
-        alert(translate("No models returned"));
+        alert("No models returned");
         return;
       }
       let importedCount = 0;
@@ -655,13 +654,13 @@ export default function ProviderDetailPage() {
         importedCount += 1;
       }
       if (importedCount === 0) {
-        alert(translate("All models already exist, no new models added"));
+        alert("All models already exist, no new models added");
       } else {
-        alert(translate("Successfully added") + ` ${importedCount} ` + translate("models"));
+        alert("Successfully added" + ` ${importedCount} ` + "models");
       }
     } catch (error) {
       console.log("Error importing Cline models:", error);
-      alert(translate("Error fetching models") + ": " + error.message);
+      alert("Error fetching models" + ": " + error.message);
     } finally {
       setImportingClineModels(false);
     }
@@ -1237,7 +1236,7 @@ export default function ProviderDetailPage() {
             <span className="material-symbols-outlined text-sm" style={importingQoderModels ? { animation: "spin 1s linear infinite" } : undefined}>
               {importingQoderModels ? "progress_activity" : "download"}
             </span>
-            {importingQoderModels ? translate("Fetching...") : translate("Fetch Qoder Models")}
+            {importingQoderModels ? "Fetching..." : "Fetch Qoder Models"}
           </button>
         )}
 
@@ -1251,7 +1250,7 @@ export default function ProviderDetailPage() {
             <span className="material-symbols-outlined text-sm" style={importingClineModels ? { animation: "spin 1s linear infinite" } : undefined}>
               {importingClineModels ? "progress_activity" : "download"}
             </span>
-            {importingClineModels ? translate("Fetching...") : translate("Import from /models")}
+            {importingClineModels ? "Fetching..." : "Import from /models"}
           </button>
         )}
 
@@ -1596,12 +1595,12 @@ export default function ProviderDetailPage() {
                     )}
                     {providerId === "codex" && (
                       <Button size="sm" icon="playlist_add" variant="secondary" onClick={() => setShowBulkImportCodex(true)}>
-                        {translate("Bulk Add")}
+                        {"Bulk Add"}
                       </Button>
                     )}
                     {providerId === "grok-cli" && (
                       <Button size="sm" icon="playlist_add" variant="secondary" onClick={() => setShowBulkImportGrokCli(true)}>
-                        {translate("Bulk Add")}
+                        {"Bulk Add"}
                       </Button>
                     )}
                     <Button
@@ -1667,10 +1666,10 @@ export default function ProviderDetailPage() {
                       icon="playlist_add"
                       variant="secondary"
                       onClick={() => setShowBulkImportCodex(true)}
-                      title={translate("Bulk import codex accounts from JSON")}
+                      title={"Bulk import codex accounts from JSON"}
                       className="w-full sm:w-auto"
                     >
-                      {translate("Bulk Add")}
+                      {"Bulk Add"}
                     </Button>
                   )}
                   {providerId === "grok-cli" && (
@@ -1679,10 +1678,10 @@ export default function ProviderDetailPage() {
                       icon="playlist_add"
                       variant="secondary"
                       onClick={() => setShowBulkImportGrokCli(true)}
-                      title={translate("Bulk import Grok CLI accounts from JSON")}
+                      title={"Bulk import Grok CLI accounts from JSON"}
                       className="w-full sm:w-auto"
                     >
-                      {translate("Bulk Add")}
+                      {"Bulk Add"}
                     </Button>
                   )}
                   {hasDualAuthModes ? (

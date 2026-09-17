@@ -6,48 +6,14 @@ import Link from "next/link";
 import PropTypes from "prop-types";
 import ProviderIcon from "@/shared/components/ProviderIcon";
 import HeaderMenu from "@/shared/components/HeaderMenu";
-import HeaderLanguage from "@/shared/components/HeaderLanguage";
 import ThemeToggle from "@/shared/components/ThemeToggle";
 import DonateModal from "@/shared/components/DonateModal";
 import { useHeaderSearchStore } from "@/store/headerSearchStore";
 import { OAUTH_PROVIDERS, APIKEY_PROVIDERS } from "@/shared/constants/config";
-import { MEDIA_PROVIDER_KINDS, AI_PROVIDERS } from "@/shared/constants/providers";
 import { getProviderIconSrc } from "@/shared/utils/providerIcon";
-import { translate } from "@/i18n/runtime";
 
 const getPageInfo = (pathname) => {
   if (!pathname) return { title: "", description: "", breadcrumbs: [] };
-
-  // Media provider detail: /dashboard/media-providers/[kind]/[id]
-  const mediaDetailMatch = pathname.match(/\/media-providers\/([^/]+)\/([^/]+)$/);
-  if (mediaDetailMatch) {
-    const kindId = mediaDetailMatch[1];
-    const providerId = mediaDetailMatch[2];
-    const kindConfig = MEDIA_PROVIDER_KINDS.find((k) => k.id === kindId);
-    const provider = AI_PROVIDERS[providerId];
-    return {
-      title: provider?.name || providerId,
-      description: "",
-      breadcrumbs: [
-        { label: "Media Providers", href: `/dashboard/media-providers/${kindId}` },
-        { label: kindConfig?.label || kindId, href: `/dashboard/media-providers/${kindId}` },
-        { label: provider?.name || providerId, image: getProviderIconSrc(providerId) },
-      ],
-    };
-  }
-
-  // Media provider kind: /dashboard/media-providers/[kind]
-  const mediaKindMatch = pathname.match(/\/media-providers\/([^/]+)$/);
-  if (mediaKindMatch) {
-    const kindId = mediaKindMatch[1];
-    const kindConfig = MEDIA_PROVIDER_KINDS.find((k) => k.id === kindId);
-    return {
-      title: kindConfig?.label || kindId,
-      description: `Manage your ${kindConfig?.label || kindId} providers`,
-      icon: kindConfig?.icon || "perm_media",
-      breadcrumbs: [],
-    };
-  }
 
   // Provider detail page: /dashboard/providers/[id]
   const providerMatch = pathname.match(/\/providers\/([^/]+)$/);
@@ -70,7 +36,7 @@ const getPageInfo = (pathname) => {
     }
   }
 
-  if (pathname.includes("/providers") && !pathname.includes("/media-providers"))
+  if (pathname.includes("/providers"))
     return {
       title: "Providers",
       description: "Manage your AI provider connections",
@@ -134,13 +100,6 @@ const getPageInfo = (pathname) => {
       icon: "lan",
       breadcrumbs: [],
     };
-  if (pathname.includes("/skills"))
-    return {
-      title: "Agent Skills",
-      description: "Copy a link and paste to your AI to use 9Router — no install needed",
-      icon: "extension",
-      breadcrumbs: [],
-    };
   if (pathname.includes("/endpoint"))
     return {
       title: "Endpoint",
@@ -153,13 +112,6 @@ const getPageInfo = (pathname) => {
       title: "Settings",
       description: "Manage your preferences",
       icon: "settings",
-      breadcrumbs: [],
-    };
-  if (pathname.includes("/translator"))
-    return {
-      title: "Translator",
-      description: "Debug translation flow between formats",
-      icon: "translate",
       breadcrumbs: [],
     };
   if (pathname.includes("/console-log"))
@@ -273,7 +225,7 @@ export default function Header({ onMenuClick, showMenuButton = true }) {
                       />
                     )}
                     <h1 className="text-base lg:text-2xl font-semibold text-text-main tracking-tight truncate">
-                      {translate(crumb.label)}
+                      {crumb.label}
                     </h1>
                   </div>
                 )}
@@ -289,12 +241,12 @@ export default function Header({ onMenuClick, showMenuButton = true }) {
                 </span>
               )}
               <h1 className="text-base lg:text-2xl font-semibold tracking-tight truncate">
-                {translate(title)}
+                {title}
               </h1>
             </div>
             {description && (
               <p className="hidden lg:block text-sm text-text-muted truncate">
-                {translate(description)}
+                {description}
               </p>
             )}
           </div>
@@ -325,7 +277,6 @@ export default function Header({ onMenuClick, showMenuButton = true }) {
           <span className="hidden sm:inline">Donate</span>
         </button>
         <ThemeToggle />
-        <HeaderLanguage />
         <HeaderMenu onLogout={handleLogout} />
       </div>
       <DonateModal isOpen={donateOpen} onClose={() => setDonateOpen(false)} />

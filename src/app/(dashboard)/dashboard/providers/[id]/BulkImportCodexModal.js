@@ -3,7 +3,7 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { Button, Modal } from "@/shared/components";
-import { translate } from "@/i18n/runtime";
+
 
 const PLACEHOLDER = `[
   {
@@ -48,13 +48,13 @@ export default function BulkImportCodexModal({ isOpen, onClose, onSuccess }) {
     try {
       parsed = JSON.parse(trimmed);
     } catch (err) {
-      setParseError(`${translate("Invalid JSON")}: ${err.message}`);
+      setParseError(`${"Invalid JSON"}: ${err.message}`);
       return;
     }
 
     const accounts = normalizeToArray(parsed);
     if (!accounts || accounts.length === 0) {
-      setParseError(translate("No accounts found in input"));
+      setParseError("No accounts found in input");
       return;
     }
 
@@ -75,7 +75,7 @@ export default function BulkImportCodexModal({ isOpen, onClose, onSuccess }) {
         onSuccess();
       }
     } catch (err) {
-      setParseError(err.message || translate("Request failed"));
+      setParseError(err.message || "Request failed");
     } finally {
       setSubmitting(false);
     }
@@ -84,12 +84,10 @@ export default function BulkImportCodexModal({ isOpen, onClose, onSuccess }) {
   const failedItems = result?.results?.filter((r) => !r.ok) || [];
 
   return (
-    <Modal isOpen={isOpen} title={translate("Bulk Add Codex Accounts")} onClose={handleClose}>
+    <Modal isOpen={isOpen} title={"Bulk Add Codex Accounts"} onClose={handleClose}>
       <div className="flex flex-col gap-4">
         <p className="text-xs text-text-muted">
-          {translate(
-            "Paste an array of codex account JSON objects. Each must include accessToken (and ideally refreshToken, idToken)."
-          )}
+          {"Paste an array of codex account JSON objects. Each must include accessToken (and ideally refreshToken, idToken)."}
         </p>
 
         <textarea
@@ -111,8 +109,8 @@ export default function BulkImportCodexModal({ isOpen, onClose, onSuccess }) {
                 result.failed > 0 ? "text-yellow-400" : "text-green-400"
               }`}
             >
-              ✓ {result.success} {translate("added")}
-              {result.failed > 0 ? `, ✗ ${result.failed} ${translate("failed")}` : ""}
+              ✓ {result.success} {"added"}
+              {result.failed > 0 ? `, ✗ ${result.failed} ${"failed"}` : ""}
             </div>
             {failedItems.length > 0 && (
               <ul className="rounded border border-accent/20 bg-sidebar/50 p-2 text-xs font-mono max-h-40 overflow-y-auto">
@@ -132,10 +130,10 @@ export default function BulkImportCodexModal({ isOpen, onClose, onSuccess }) {
             fullWidth
             disabled={submitting || !jsonText.trim()}
           >
-            {submitting ? translate("Importing...") : translate("Import All")}
+            {submitting ? "Importing..." : "Import All"}
           </Button>
           <Button onClick={handleClose} variant="ghost" fullWidth disabled={submitting}>
-            {translate("Close")}
+            {"Close"}
           </Button>
         </div>
       </div>

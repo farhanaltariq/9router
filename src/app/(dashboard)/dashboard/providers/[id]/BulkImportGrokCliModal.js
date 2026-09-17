@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Modal, Button } from "@/shared/components";
-import { translate } from "@/i18n/runtime";
+
 
 const PLACEHOLDER = `[
   {
@@ -79,7 +79,7 @@ export default function BulkImportGrokCliModal({ isOpen, onClose, onSuccess }) {
     );
 
     if (jsonFiles.length === 0) {
-      setParseError(translate("Please select valid .json files"));
+      setParseError("Please select valid .json files");
       return;
     }
 
@@ -96,7 +96,7 @@ export default function BulkImportGrokCliModal({ isOpen, onClose, onSuccess }) {
       }
 
       if (allAccounts.length === 0) {
-        setParseError(translate("No accounts found in selected files"));
+        setParseError("No accounts found in selected files");
         return;
       }
 
@@ -106,7 +106,7 @@ export default function BulkImportGrokCliModal({ isOpen, onClose, onSuccess }) {
         accountsCount: allAccounts.length,
       });
     } catch (err) {
-      setParseError(`${translate("Error reading files")}: ${err.message}`);
+      setParseError(`${"Error reading files"}: ${err.message}`);
     }
   };
 
@@ -141,12 +141,12 @@ export default function BulkImportGrokCliModal({ isOpen, onClose, onSuccess }) {
     try {
       accounts = parseAccountsInput(jsonText);
     } catch (err) {
-      setParseError(`${translate("Invalid JSON")}: ${err.message}`);
+      setParseError(`${"Invalid JSON"}: ${err.message}`);
       return;
     }
 
     if (!accounts || accounts.length === 0) {
-      setParseError(translate("No accounts found in input"));
+      setParseError("No accounts found in input");
       return;
     }
 
@@ -169,7 +169,7 @@ export default function BulkImportGrokCliModal({ isOpen, onClose, onSuccess }) {
         onSuccess();
       }
     } catch (err) {
-      setParseError(err.message || translate("Request failed"));
+      setParseError(err.message || "Request failed");
     } finally {
       setSubmitting(false);
     }
@@ -178,11 +178,11 @@ export default function BulkImportGrokCliModal({ isOpen, onClose, onSuccess }) {
   const failedItems = result?.results?.filter((r) => !r.ok) || [];
 
   return (
-    <Modal isOpen={isOpen} title={translate("Bulk Add Grok CLI Accounts")} onClose={handleClose}>
+    <Modal isOpen={isOpen} title={"Bulk Add Grok CLI Accounts"} onClose={handleClose}>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs text-text-muted">
-            {translate("Upload multiple .json files or paste JSON array / object.")}
+            {"Upload multiple .json files or paste JSON array / object."}
           </p>
           <input
             ref={fileInputRef}
@@ -200,7 +200,7 @@ export default function BulkImportGrokCliModal({ isOpen, onClose, onSuccess }) {
             onClick={() => fileInputRef.current?.click()}
             disabled={submitting}
           >
-            {translate("Upload JSON Files")}
+            {"Upload JSON Files"}
           </Button>
         </div>
 
@@ -229,7 +229,7 @@ export default function BulkImportGrokCliModal({ isOpen, onClose, onSuccess }) {
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-sidebar/90 rounded pointer-events-none backdrop-blur-xs">
               <span className="material-symbols-outlined text-3xl text-primary mb-1">upload_file</span>
               <span className="text-sm font-medium text-primary">
-                {translate("Drop .json files here")}
+                {"Drop .json files here"}
               </span>
             </div>
           )}
@@ -239,8 +239,8 @@ export default function BulkImportGrokCliModal({ isOpen, onClose, onSuccess }) {
           <div className="flex items-center gap-1.5 text-xs text-green-400 font-medium bg-green-500/10 border border-green-500/20 px-2.5 py-1.5 rounded">
             <span className="material-symbols-outlined text-sm">check_circle</span>
             <span>
-              {translate("Loaded")} {fileCountInfo.accountsCount} {translate("account(s) from")}{" "}
-              {fileCountInfo.filesCount} {translate("file(s)")}
+              {"Loaded"} {fileCountInfo.accountsCount} {"account(s) from"} {" "}
+              {fileCountInfo.filesCount} {"file(s)"}
             </span>
           </div>
         )}
@@ -252,7 +252,7 @@ export default function BulkImportGrokCliModal({ isOpen, onClose, onSuccess }) {
         {result && result.failed > 0 && (
           <div className="flex flex-col gap-2">
             <div className="text-sm font-medium text-yellow-400">
-              ✗ {result.failed} {translate("failed")}
+              ✗ {result.failed} {"failed"}
             </div>
             {failedItems.length > 0 && (
               <ul className="rounded border border-accent/20 bg-sidebar/50 p-2 text-xs font-mono max-h-40 overflow-y-auto">
@@ -272,10 +272,10 @@ export default function BulkImportGrokCliModal({ isOpen, onClose, onSuccess }) {
             fullWidth
             disabled={submitting || !jsonText.trim()}
           >
-            {submitting ? translate("Importing...") : translate("Import All")}
+            {submitting ? "Importing..." : "Import All"}
           </Button>
           <Button onClick={handleClose} variant="ghost" fullWidth disabled={submitting}>
-            {translate("Close")}
+            {"Close"}
           </Button>
         </div>
       </div>

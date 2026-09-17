@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Card, Button, Input, Modal, Toggle, ConfirmModal } from "@/shared/components";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
-import { getCurrentLocale, onLocaleChange } from "@/i18n/runtime";
+
 import {
   WENYAN_LOCALES,
   CAVEMAN_LEVELS,
@@ -58,16 +58,12 @@ export default function TokenSaverClient() {
   const [showPxpipeModal, setShowPxpipeModal] = useState(false);
   const [pxpipeActionLoading, setPxpipeActionLoading] = useState(false);
   const [pxpipeActionError, setPxpipeActionError] = useState("");
-  const [locale, setLocale] = useState("en");
+
 
   const { copied, copy } = useCopyToClipboard();
 
-  useEffect(() => {
-    setLocale(getCurrentLocale());
-    return onLocaleChange(() => setLocale(getCurrentLocale()));
-  }, []);
 
-  const isWenyanLocale = WENYAN_LOCALES.includes(locale);
+  const isWenyanLocale = false;
   const visibleCavemanLevels = isWenyanLocale
     ? CAVEMAN_LEVELS
     : CAVEMAN_LEVELS.filter((lvl) => !lvl.wenyan);
