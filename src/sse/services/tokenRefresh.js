@@ -9,17 +9,14 @@ import {
 import {
   TOKEN_EXPIRY_BUFFER_MS as BUFFER_MS,
   refreshAccessToken as _refreshAccessToken,
-  refreshClaudeOAuthToken as _refreshClaudeOAuthToken,
   refreshGoogleToken as _refreshGoogleToken,
   refreshCodexToken as _refreshCodexToken,
-  refreshIflowToken as _refreshIflowToken,
   refreshGitHubToken as _refreshGitHubToken,
   refreshCopilotToken as _refreshCopilotToken,
   getAccessToken as _getAccessToken,
   refreshTokenByProvider as _refreshTokenByProvider,
   formatProviderCredentials as _formatProviderCredentials,
   getAllAccessTokens as _getAllAccessTokens,
-  refreshKiroToken as _refreshKiroToken,
   getRefreshLeadMs as _getRefreshLeadMs
 } from "open-sse/services/tokenRefresh.js";
 import {
@@ -34,26 +31,17 @@ export const TOKEN_EXPIRY_BUFFER_MS = BUFFER_MS;
 export const refreshAccessToken = (provider, refreshToken, credentials) =>
   _refreshAccessToken(provider, refreshToken, credentials, log);
 
-export const refreshClaudeOAuthToken = (refreshToken) =>
-  _refreshClaudeOAuthToken(refreshToken, log);
-
 export const refreshGoogleToken = (refreshToken, clientId, clientSecret) =>
   _refreshGoogleToken(refreshToken, clientId, clientSecret, log);
 
 export const refreshCodexToken = (refreshToken) =>
   _refreshCodexToken(refreshToken, log);
 
-export const refreshIflowToken = (refreshToken) =>
-  _refreshIflowToken(refreshToken, log);
-
 export const refreshGitHubToken = (refreshToken) =>
   _refreshGitHubToken(refreshToken, log);
 
 export const refreshCopilotToken = (githubAccessToken) =>
   _refreshCopilotToken(githubAccessToken, log);
-
-export const refreshKiroToken = (refreshToken, providerSpecificData) =>
-  _refreshKiroToken(refreshToken, providerSpecificData, log);
 
 export const getAccessToken = (provider, credentials) =>
   _getAccessToken(provider, credentials, log);
@@ -109,7 +97,7 @@ function normalizeExpiresAt(expiresAt) {
  * @returns {boolean}
  */
 function needsProjectId(provider) {
-  return provider === "antigravity" || provider === "gemini-cli";
+  return provider === "antigravity";
 }
 
 /**

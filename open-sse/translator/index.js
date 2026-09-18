@@ -6,7 +6,6 @@ import { filterToOpenAIFormat } from "./formats/openai.js";
 import { normalizeThinkingConfig } from "../services/provider.js";
 import { applyThinking, captureThinking } from "./concerns/thinkingUnified.js";
 import { captureSessionId } from "../utils/sessionManager.js";
-import { AntigravityExecutor } from "../executors/antigravity.js";
 import { PROVIDERS } from "../providers/index.js";
 
 // Registry for translators. Lazy-init guards against circular-import order:
@@ -61,14 +60,7 @@ export function translateRequest(sourceFormat, targetFormat, model, body, stream
 
   // Always ensure tool_calls have id (some providers require it)
   ensureToolCallIds(result);
-  
-  // Kiro performs stricter source-aware reconciliation after session replay.
-  // The generic helper inserts OpenAI `role: tool` messages, which a direct
-  // Claude→Kiro translator cannot consume and which cannot repair partial
-  // parallel tool results.
-  if (targetFormat !== FORMATS.KIRO) {
-    fixMissingToolResponses(result);
-  }
+  fixMissingToolResponses(result);
 
   // Capture thinking intent from the original (pre-translation) body, before any
   // format conversion strips/renames the fields. Applied after translation.
@@ -109,15 +101,7 @@ export function translateRequest(sourceFormat, targetFormat, model, body, stream
   }
 
   // Normalize thinking to the target provider-native format (config-driven, capability-aware).
-  // Kiro's GenerateAssistantResponse request does not accept the generic top-level
-  // `thinking` field; its translators map thinking intent to KAS-compatible
-  // systemPrompt/additionalModelRequestFields instead.
-  const kiroThinkingMappedByTranslator =
-    targetFormat === FORMATS.KIRO &&
-    (sourceFormat === FORMATS.OPENAI || sourceFormat === FORMATS.CLAUDE);
-  if (!kiroThinkingMappedByTranslator) {
-    applyThinking(targetFormat, model, result, provider, thinkingIntent);
-  }
+  applyThinking(targetFormat, model, result, provider, thinkingIntent);
 
   // Always normalize to clean OpenAI format when target is OpenAI
   // This handles hybrid requests (e.g., OpenAI messages + Claude tools)
@@ -280,23 +264,13 @@ export function initTranslators() {
 // Static side-effect imports: each module calls register() at load (works in ESM + bundler).
 import "./request/claude-to-openai.js";
 import "./request/openai-to-claude.js";
-import "./request/gemini-to-openai.js";
-import "./request/openai-to-gemini.js";
-import "./request/openai-to-vertex.js";
 import "./request/antigravity-to-openai.js";
 import "./request/openai-responses.js";
-import "./request/openai-to-kiro.js";
-import "./request/openai-to-cursor.js";
 import "./request/openai-to-ollama.js";
 import "./request/openai-to-commandcode.js";
-import "./request/claude-to-kiro.js";
 import "./response/claude-to-openai.js";
 import "./response/openai-to-claude.js";
-import "./response/gemini-to-openai.js";
 import "./response/openai-to-antigravity.js";
 import "./response/openai-responses.js";
-import "./response/kiro-to-openai.js";
-import "./response/cursor-to-openai.js";
 import "./response/ollama-to-openai.js";
 import "./response/commandcode-to-openai.js";
-import "./response/kiro-to-claude.js";

@@ -2,9 +2,8 @@ import { NextResponse } from "next/server";
 import { getProviderNodeById } from "@/models";
 import { isOpenAICompatibleProvider, isAnthropicCompatibleProvider, isCustomEmbeddingProvider, AI_PROVIDERS } from "@/shared/constants/providers";
 import { getDefaultModel } from "open-sse/config/providerModels.js";
-import { resolveOllamaLocalHost, resolveXiaomiTokenplanBaseUrl, PROVIDERS } from "open-sse/config/providers.js";
+import { resolveOllamaLocalHost, PROVIDERS } from "open-sse/config/providers.js";
 import { openaiToCommandCodeRequest } from "open-sse/translator/request/openai-to-commandcode.js";
-import { resolveQoderCredentials, resolveQoderModels } from "open-sse/services/qoderModels.js";
 import { normalizeProviderId } from "@/lib/providerNormalization";
 
 // Probe a webSearch/webFetch provider using its searchConfig/fetchConfig.
@@ -298,7 +297,6 @@ export async function POST(request) {
 
         case "glm":
         case "glm-cn":
-        case "kimi":
         case "minimax":
         case "minimax-cn":
         case "alicode-intl":
@@ -369,8 +367,6 @@ export async function POST(request) {
         case "assemblyai":
         case "nanobanana":
         case "chutes":
-        case "xiaomi-mimo":
-        case "xiaomi-tokenplan":
         case "nvidia": {
           const endpoints = {
             ...Object.fromEntries(
@@ -378,7 +374,6 @@ export async function POST(request) {
             ),
             // dynamic URLs (depend on providerSpecificData) — kept inline
             "ollama-local": `${resolveOllamaLocalHost({ providerSpecificData })}/api/tags`,
-            "xiaomi-tokenplan": `${resolveXiaomiTokenplanBaseUrl({ providerSpecificData })}/models`,
           };
           const headers = {};
           if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
@@ -386,9 +381,6 @@ export async function POST(request) {
           // xai returns 400 for bad key, 403 for valid-but-no-credit. Other providers use 401.
           if (provider === "xai") {
             isValid = res.status === 200 || res.status === 403;
-          } else if (provider === "xiaomi-tokenplan") {
-            // /models returns 403 for valid keys lacking list permission; only 401 means invalid
-            isValid = res.status !== 401;
           } else {
             isValid = res.ok;
           }
@@ -578,20 +570,6 @@ export async function POST(request) {
             error = "Invalid session cookie — re-paste __Secure-next-auth.session-token from perplexity.ai";
           } else {
             isValid = true;
-          }
-          break;
-        }
-
-        case "qoder": {
-          // PAT (pt-...) needs the job-token exchange before it can sign
-          // anything — the generic OpenAI-compat probe below can't validate it.
-          try {
-            const resolved = await resolveQoderCredentials({ apiKey, providerSpecificData }, null, AbortSignal.timeout(8000));
-            const result = await resolveQoderModels(resolved, { forceRefresh: true });
-            isValid = !!result?.models?.length;
-          } catch (err) {
-            isValid = false;
-            error = err.message;
           }
           break;
         }

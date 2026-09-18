@@ -1,77 +1,29 @@
 import { PROVIDERS } from "../config/providers.js";
 import { OAUTH_ENDPOINTS, REFRESH_LEAD_MS } from "../config/appConstants.js";
 import {
-  refreshXaiToken,
   refreshAccessToken,
-  refreshKimiToken,
-  refreshClineToken,
-  refreshClaudeOAuthToken,
   refreshGoogleToken,
   refreshCodexToken,
-  refreshKiroToken,
-  refreshIflowToken,
   refreshGitHubToken,
   refreshCopilotToken,
   refreshCodebuddyToken,
   refreshCodebuddyIntlToken,
-  refreshTraeToken,
-  refreshZedToken,
-  refreshWindsurfToken,
   classifyOAuthRefreshError,
 } from "./tokenRefresh/providers.js";
 
-// Re-export all provider refresh functions (preserves public API for all consumers)
+// Re-export provider refresh functions (preserves public API for all consumers)
 export {
   refreshAccessToken,
-  refreshKimiToken,
-  refreshClineToken,
-  refreshClaudeOAuthToken,
   refreshGoogleToken,
   refreshCodexToken,
-  refreshKiroToken,
-  refreshIflowToken,
   refreshGitHubToken,
   refreshCopilotToken,
   refreshCodebuddyToken,
   refreshCodebuddyIntlToken,
-  refreshTraeToken,
-  refreshZedToken,
-  refreshWindsurfToken,
   classifyOAuthRefreshError,
 };
 
 export const TOKEN_EXPIRY_BUFFER_MS = 5 * 60 * 1000;
-
-export function isUnrecoverableRefreshError(result) {
-  return (
-    result &&
-    typeof result === "object" &&
-    (result.error === "unrecoverable_refresh_error" ||
-      result.error === "refresh_token_reused" ||
-      result.error === "invalid_request" ||
-      result.error === "invalid_grant")
-  );
-}
-
-export function getRefreshLeadMs(provider) {
-  if (REFRESH_LEAD_MS[provider]) return REFRESH_LEAD_MS[provider];
-  // Legacy id after kimi-coding → kimi merge
-  if (provider === "kimi-coding" && REFRESH_LEAD_MS.kimi) return REFRESH_LEAD_MS.kimi;
-  return TOKEN_EXPIRY_BUFFER_MS;
-}
-
-export function parseVertexSaJson(apiKey) {
-  if (typeof apiKey !== "string") return null;
-  try {
-    const parsed = JSON.parse(apiKey);
-    if (parsed.type === "service_account" && parsed.client_email && parsed.private_key && parsed.project_id) {
-      return parsed;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
 
 // Cache Vertex tokens keyed by service account email { token, expiresAt }
 const vertexTokenCache = new Map();
@@ -126,37 +78,40 @@ export async function refreshVertexToken(saJson, log) {
   }
 }
 
-function vertexRefreshHandler(c, log) {
-  const saJson = parseVertexSaJson(c.apiKey);
-  if (!saJson) return null;
-  return refreshVertexToken(saJson, log);
+export function isUnrecoverableRefreshError(result) {
+  return (
+    result &&
+    typeof result === "object" &&
+    (result.error === "unrecoverable_refresh_error" ||
+      result.error === "refresh_token_reused" ||
+      result.error === "invalid_request" ||
+      result.error === "invalid_grant")
+  );
+}
+
+export function getRefreshLeadMs(provider) {
+  return REFRESH_LEAD_MS[provider] || TOKEN_EXPIRY_BUFFER_MS;
+}
+
+export function parseVertexSaJson(apiKey) {
+  if (typeof apiKey !== "string") return null;
+  try {
+    const parsed = JSON.parse(apiKey);
+    if (parsed.type === "service_account" && parsed.client_email && parsed.private_key && parsed.project_id) {
+      return parsed;
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 const REFRESH_HANDLERS = {
-  "gemini-cli": (c, log) => refreshGoogleToken(c.refreshToken, PROVIDERS["gemini-cli"].clientId, PROVIDERS["gemini-cli"].clientSecret, log),
   antigravity: (c, log) => refreshGoogleToken(c.refreshToken, PROVIDERS.antigravity.clientId, PROVIDERS.antigravity.clientSecret, log),
-  claude: (c, log) => refreshClaudeOAuthToken(c.refreshToken, log),
   codex: (c, log) => refreshCodexToken(c.refreshToken, log),
-  iflow: (c, log) => refreshIflowToken(c.refreshToken, log),
   github: (c, log) => refreshGitHubToken(c.refreshToken, log),
-  kiro: (c, log) => refreshKiroToken(c.refreshToken, c.providerSpecificData, log),
-  xai: (c, log) => refreshXaiToken(c.refreshToken, log),
-  // Grok CLI shares xAI OAuth client + token endpoint (device-code tokens refresh the same way)
-  "grok-cli": (c, log) => refreshXaiToken(c.refreshToken, log),
-  gcli: (c, log) => refreshXaiToken(c.refreshToken, log),
   "codebuddy-cn": (c, log) => refreshCodebuddyToken(c.refreshToken, log),
   "codebuddy-intl": (c, log) => refreshCodebuddyIntlToken(c.refreshToken, log),
-  trae: (c, log) => refreshTraeToken(c.refreshToken, c, log),
-  cline: (c, log) => refreshClineToken(c.refreshToken, log),
-  // ClinePass shares Cline's WorkOS auth endpoints, so the same refresh works.
-  clinepass: (c, log) => refreshClineToken(c.refreshToken, log),
-  zed: () => refreshZedToken(),
-  windsurf: (c, log) => refreshWindsurfToken(c, log),
-  // Kimi Code OAuth (merged into id `kimi`); legacy id still routes here
-  kimi: (c, log) => refreshKimiToken(c.refreshToken, c, log),
-  "kimi-coding": (c, log) => refreshKimiToken(c.refreshToken, c, log),
-  vertex: vertexRefreshHandler,
-  "vertex-partner": vertexRefreshHandler
 };
 
 export async function getAccessToken(provider, credentials, log) {
@@ -168,9 +123,6 @@ export async function getAccessToken(provider, credentials, log) {
 }
 
 async function _getAccessTokenInternal(provider, credentials, log) {
-  if (provider === "gemini") {
-    return refreshGoogleToken(credentials.refreshToken, PROVIDERS.gemini.clientId, PROVIDERS.gemini.clientSecret, log);
-  }
   const handler = REFRESH_HANDLERS[provider];
   if (!handler) {
     log?.warn?.("TOKEN_REFRESH", `Unsupported provider for token refresh: ${provider}`);
@@ -193,32 +145,15 @@ export function formatProviderCredentials(provider, credentials, log) {
   }
 
   switch (provider) {
-    case "gemini":
-      return {
-        apiKey: credentials.apiKey,
-        accessToken: credentials.accessToken,
-        projectId: credentials.projectId
-      };
-
-    case "claude":
-      return {
-        apiKey: credentials.apiKey,
-        accessToken: credentials.accessToken
-      };
-
     case "codex":
-    case "iflow":
     case "openai":
     case "openrouter":
-    case "xai":
-    case "grok-cli":
       return {
         apiKey: credentials.apiKey,
         accessToken: credentials.accessToken
       };
 
     case "antigravity":
-    case "gemini-cli":
       return {
         accessToken: credentials.accessToken,
         refreshToken: credentials.refreshToken,

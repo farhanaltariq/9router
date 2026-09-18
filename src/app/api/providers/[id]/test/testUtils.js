@@ -26,13 +26,6 @@ const OAUTH_TEST_CONFIG = {
     acceptStatuses: [400],
     refreshable: true,
   },
-  "gemini-cli": {
-    url: "https://www.googleapis.com/oauth2/v1/userinfo?alt=json",
-    method: "GET",
-    authHeader: "Authorization",
-    authPrefix: "Bearer ",
-    refreshable: true,
-  },
   antigravity: {
     url: "https://www.googleapis.com/oauth2/v1/userinfo?alt=json",
     method: "GET",
@@ -106,7 +99,7 @@ function parseProviderErrorMessage(bodyText, fallback) {
 async function probeCloudCodeAssistAccess(connection, accessToken, effectiveProxy = null) {
   const userAgent = connection.provider === "antigravity"
     ? "google-api-nodejs-client/9.15.1 vscode-antigravity/1.107.0"
-    : "google-api-nodejs-client/9.15.1 gemini-cli/0.34.0";
+    : "google-api-nodejs-client/9.15.1";
 
   const res = await fetchWithConnectionProxy(CLOUD_CODE_ASSIST_TEST_URL, {
     method: "POST",
@@ -171,7 +164,7 @@ async function testOAuthConnection(connection, effectiveProxy = null) {
   if (!config) return { valid: false, error: "Provider test not supported", refreshed: false };
   if (!connection.accessToken) return { valid: false, error: "No access token", refreshed: false };
 
-  // Cursor uses protobuf API - can only verify token exists, not test endpoint
+  // Token-existence-only providers (web-cookie flows) can't be probed by endpoint.
   if (config.tokenExists) {
     return { valid: true, error: null, refreshed: false, newTokens: null };
   }
@@ -423,18 +416,7 @@ async function testApiKeyConnection(connection, effectiveProxy = null) {
         const valid = res.status !== 401 && res.status !== 403;
         return { valid, error: valid ? null : "Invalid API key" };
       }
-      case "kimi": {
-        const res = await fetchWithConnectionProxy("https://api.kimi.com/coding/v1/messages", {
-          method: "POST",
-          headers: { "x-api-key": connection.apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-          body: JSON.stringify({ model: "kimi-latest", max_tokens: 1, messages: [{ role: "user", content: "test" }] }),
-        }, effectiveProxy);
-        const valid = res.status !== 401 && res.status !== 403;
-        return { valid, error: valid ? null : "Invalid API key" };
-      }
-      case "alicode":
-      case "alicode-intl":
-      case "alims-intl": {
+      case "nvidia": {
         // Aliyun Coding Plan uses OpenAI-compatible API; alims-intl uses Model Studio compatible-mode
         const aliBaseUrl = connection.provider === "alicode-intl"
           ? "https://coding-intl.dashscope.aliyuncs.com/v1/chat/completions"
@@ -583,61 +565,12 @@ async function testApiKeyConnection(connection, effectiveProxy = null) {
         const valid = res.status !== 401 && res.status !== 403;
         return { valid, error: valid ? null : "Invalid API key" };
       }
-      case "xiaomi-mimo":
-      case "xiaomi-tokenplan": {
-        const baseUrls = { "xiaomi-mimo": "https://api.xiaomimimo.com/v1", "xiaomi-tokenplan": "https://token-plan-sgp.xiaomimimo.com/v1" };
-        const res = await fetchWithConnectionProxy(`${baseUrls[connection.provider]}/models`, {
-          headers: { Authorization: `Bearer ${connection.apiKey}` },
-        }, effectiveProxy);
-        return { valid: res.ok, error: res.ok ? null : "Invalid API key" };
-      }
       case "blackbox": {
         const baseUrl = PROVIDERS["blackbox"]?.baseUrl?.replace(/\/chat\/completions$/, "") || "https://api.blackbox.ai/v1";
         const res = await fetchWithConnectionProxy(`${baseUrl}/models`, {
           headers: { Authorization: `Bearer ${connection.apiKey}` },
         }, effectiveProxy);
         return { valid: res.ok, error: res.ok ? null : "Invalid API key" };
-      }
-      case "qoder": {
-        // PAT (pt-...) exchange → job token. A successful exchange proves the PAT.
-        const raw = connection.apiKey || "";
-        const pat = raw.startsWith("pt-") ? raw : `pt-${raw}`;
-        const exRes = await fetchWithConnectionProxy(
-          "https://openapi.qoder.sh/api/v1/jobToken/exchange",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-              "Cosy-Version": "1.0.1",
-              "Cosy-ClientType": "5",
-            },
-            body: JSON.stringify({ personal_token: pat }),
-          },
-          effectiveProxy,
-        );
-        return { valid: exRes.ok, error: exRes.ok ? null : "Invalid Personal Access Token" };
-      }
-case "llm7": {
-        const baseUrl = connection.providerSpecificData?.baseUrl || "https://api.llm7.io/v1";
-        const res = await fetchWithConnectionProxy(`${baseUrl.replace(/\/$/, "")}/models`, {
-          headers: { Authorization: `Bearer ${connection.apiKey}` },
-        }, effectiveProxy);
-        return { valid: res.ok, error: res.ok ? null : "Invalid API key or base URL" };
-      }
-      case "kimchi": {
-        // Dual-auth: same validation endpoint as the OAuth flow — the token (API key
-        // or OAuth access token) is sent as Authorization: Bearer.
-        const url = "https://api.cast.ai/v1/llm/openai/supported-providers";
-        const res = await fetchWithConnectionProxy(url, {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${connection.apiKey}`,
-            "User-Agent": "kimchi/0.1.40",
-          },
-        }, effectiveProxy);
-        return { valid: res.ok, error: res.ok ? null : "Invalid API key", refreshed: false };
       }
       default:
         return { valid: false, error: "Provider test not supported" };

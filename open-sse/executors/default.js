@@ -2,8 +2,7 @@ import { BaseExecutor } from "./base.js";
 import { PROVIDERS, PROVIDER_OAUTH } from "../config/providers.js";
 import { ANTHROPIC_API_VERSION, OPENAI_COMPAT_BASE, ANTHROPIC_COMPAT_BASE, selectAnthropicBeta } from "../providers/shared.js";
 import { resolveOpenAICompatibleApiType } from "../services/provider.js";
-import { OAUTH_ENDPOINTS, buildKimiHeaders } from "../config/appConstants.js";
-import { buildClineHeaders } from "../shared/clineAuth.js";
+import { OAUTH_ENDPOINTS } from "../config/appConstants.js";
 import { proxyAwareFetch } from "../utils/proxyFetch.js";
 import { injectReasoningContent } from "../utils/reasoningContentInjector.js";
 import { stripUnsupportedParams } from "../translator/concerns/paramSupport.js";
@@ -37,12 +36,7 @@ function applyAuth(headers, desc, credentials) {
 }
 
 // Provider-specific header quirks kept as small hooks (not pure auth).
-const HEADER_HOOKS = {
-  // Stable device_id from OAuth connection (CLIProxyAPI KimiTokenStorage.DeviceID)
-  kimiHeaders: (h, c) => Object.assign(h, buildKimiHeaders(c?.providerSpecificData?.deviceId)),
-  clineHeaders: (h, c) => Object.assign(h, buildClineHeaders(c.apiKey || c.accessToken)),
-  kilocodeOrg: (h, c) => { if (c.providerSpecificData?.orgId) h["X-Kilocode-OrganizationID"] = c.providerSpecificData.orgId; },
-};
+const HEADER_HOOKS = {};
 
 // Config-driven OAuth refresh grants — derived from registry oauth.refresh.
 const REFRESH_GRANTS = Object.fromEntries(
@@ -222,14 +216,7 @@ export class DefaultExecutor extends BaseExecutor {
     const refreshers = {
       claude: () => this.refreshFromGrant(credentials, proxyOptions),
       codex: () => this.refreshFromGrant(credentials, proxyOptions),
-      iflow: () => this.refreshIflow(credentials.refreshToken, proxyOptions),
       gemini: () => this.refreshFromGrant(credentials, proxyOptions),
-      kiro: () => this.refreshKiro(credentials.refreshToken, proxyOptions),
-      cline: () => this.refreshCline(credentials.refreshToken, proxyOptions),
-      clinepass: () => this.refreshCline(credentials.refreshToken, proxyOptions),
-      kimi: () => this.refreshKimi(credentials, proxyOptions),
-      "kimi-coding": () => this.refreshKimi(credentials, proxyOptions),
-      kilocode: () => this.refreshKilocode(credentials.refreshToken, proxyOptions)
     };
 
     const refresher = refreshers[this.provider];
@@ -265,72 +252,6 @@ export class DefaultExecutor extends BaseExecutor {
     if (!response.ok) return null;
     const tokens = await response.json();
     return { accessToken: tokens.access_token, refreshToken: tokens.refresh_token || params.refresh_token, expiresIn: tokens.expires_in };
-  }
-
-  async refreshIflow(refreshToken, proxyOptions = null) {
-    const basicAuth = btoa(`${PROVIDERS.iflow.clientId}:${PROVIDERS.iflow.clientSecret}`);
-    const response = await proxyAwareFetch(OAUTH_ENDPOINTS.iflow.token, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded", "Accept": "application/json", "Authorization": `Basic ${basicAuth}` },
-      body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken, client_id: PROVIDERS.iflow.clientId, client_secret: PROVIDERS.iflow.clientSecret })
-    }, proxyOptions);
-    if (!response.ok) return null;
-    const tokens = await response.json();
-    return { accessToken: tokens.access_token, refreshToken: tokens.refresh_token || refreshToken, expiresIn: tokens.expires_in };
-  }
-
-  async refreshKiro(refreshToken, proxyOptions = null) {
-    const response = await proxyAwareFetch(PROVIDERS.kiro.tokenUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Accept": "application/json", "User-Agent": "kiro-cli/1.0.0" },
-      body: JSON.stringify({ refreshToken })
-    }, proxyOptions);
-    if (!response.ok) return null;
-    const tokens = await response.json();
-    return { accessToken: tokens.accessToken, refreshToken: tokens.refreshToken || refreshToken, expiresIn: tokens.expiresIn };
-  }
-
-  async refreshCline(refreshToken, proxyOptions = null) {
-    const response = await proxyAwareFetch(PROVIDERS.cline.refreshUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Accept": "application/json" },
-      body: JSON.stringify({ refreshToken, grantType: "refresh_token", clientType: "extension" })
-    }, proxyOptions);
-    if (!response.ok) return null;
-    const payload = await response.json();
-    const data = payload?.data || payload;
-    const expiresAtIso = data?.expiresAt;
-    const expiresIn = expiresAtIso ? Math.max(1, Math.floor((new Date(expiresAtIso).getTime() - Date.now()) / 1000)) : undefined;
-    let accessToken = data?.accessToken;
-    if (accessToken && !accessToken.startsWith("workos:")) {
-      accessToken = `workos:${accessToken}`;
-    }
-    return { accessToken, refreshToken: data?.refreshToken || refreshToken, expiresIn };
-  }
-
-  // CLIProxyAPI DeviceFlowClient.RefreshToken — form body + X-Msh-* headers + stable device_id
-  async refreshKimi(credentials, proxyOptions = null) {
-    const refreshToken = credentials.refreshToken;
-    const cfg = PROVIDERS.kimi || PROVIDERS["kimi-coding"];
-    if (!cfg?.refreshUrl || !cfg?.clientId) return null;
-    const kimiHeaders = buildKimiHeaders(credentials?.providerSpecificData?.deviceId);
-    const response = await proxyAwareFetch(cfg.refreshUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Accept": "application/json",
-        ...kimiHeaders
-      },
-      body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken, client_id: cfg.clientId })
-    }, proxyOptions);
-    if (!response.ok) return null;
-    const tokens = await response.json();
-    return { accessToken: tokens.access_token, refreshToken: tokens.refresh_token || refreshToken, expiresIn: tokens.expires_in };
-  }
-
-  async refreshKilocode(refreshToken, proxyOptions = null) {
-    // Kilocode uses device code flow, no refresh token support
-    return null;
   }
 }
 

@@ -140,8 +140,6 @@ export function stripUnsupportedModalities(body, sourceFormat, caps) {
   switch (sourceFormat) {
     case FORMATS.OPENAI:
     case FORMATS.OLLAMA:
-    case FORMATS.KIRO:
-    case FORMATS.CURSOR:
     case FORMATS.COMMANDCODE:
       stripOpenAI(body, caps);
       break;
@@ -152,11 +150,6 @@ export function stripUnsupportedModalities(body, sourceFormat, caps) {
     case FORMATS.OPENAI_RESPONSE:
     case FORMATS.CODEX:
       stripResponses(body, caps);
-      break;
-    case FORMATS.GEMINI:
-    case FORMATS.GEMINI_CLI:
-    case FORMATS.VERTEX:
-      stripGeminiParts(body.contents, caps);
       break;
     case FORMATS.ANTIGRAVITY:
       stripGeminiParts(body?.request?.contents, caps);
