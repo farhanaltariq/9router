@@ -172,7 +172,7 @@ export default function ProviderDetailPage() {
       if (lv) lv.forEach((l) => { if (l !== "none") set.add(l); });
     };
     for (const m of models) addLevels(m.id);
-    addLevels(entry.id);
+    addLevels(providerInfo?.id);
     return set.size ? ["auto", ...[...set]] : null;
   })();
   const providerDisplayAlias = isCompatible
