@@ -42,7 +42,7 @@ function buildProviderEntry(r) {
 // Upgrade path: per-category allowlists if more UI surfaces need curation.
 const OAUTH_ALLOWLIST = new Set(["antigravity", "github", "codex", "codebuddy-intl", "codebuddy-cn"]);
 const FREE_TIER_ALLOWLIST = new Set(["nvidia", "ollama", "cloudflare-ai"]);
-const APIKEY_ALLOWLIST = new Set();
+const APIKEY_ALLOWLIST = new Set(["commandcode"]);
 const FREE_ALLOWLIST = new Set();
 const WEB_COOKIE_ALLOWLIST = new Set();
 
