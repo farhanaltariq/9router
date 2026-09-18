@@ -3,12 +3,16 @@ import { OPENAI_COMPAT_BASE, ANTHROPIC_COMPAT_BASE } from "../providers/shared.j
 
 const OPENAI_COMPATIBLE_PREFIX = "openai-compatible-";
 const OPENAI_COMPATIBLE_DEFAULTS = {
+  format: "openai",
   baseUrl: OPENAI_COMPAT_BASE,
+  auth: { combined: true, header: "Authorization", scheme: "bearer" },
 };
 
 const ANTHROPIC_COMPATIBLE_PREFIX = "anthropic-compatible-";
 const ANTHROPIC_COMPATIBLE_DEFAULTS = {
+  format: "claude",
   baseUrl: ANTHROPIC_COMPAT_BASE,
+  auth: { combined: true, header: "x-api-key", scheme: "raw" },
 };
 
 function isOpenAICompatible(provider) {
@@ -115,19 +119,14 @@ function getProviderConfig(provider, credentials = null) {
   if (isOpenAICompatible(provider)) {
     const apiType = resolveOpenAICompatibleApiType(provider, credentials);
     return {
-      ...PROVIDERS.openai,
+      ...OPENAI_COMPATIBLE_DEFAULTS,
       format: apiType === "responses" ? "openai-responses" : "openai",
-      baseUrl: OPENAI_COMPATIBLE_DEFAULTS.baseUrl,
     };
   }
   if (isAnthropicCompatible(provider)) {
-    return {
-      ...PROVIDERS.anthropic, // Use Anthropic defaults (header: x-api-key)
-      format: "claude",
-      baseUrl: ANTHROPIC_COMPATIBLE_DEFAULTS.baseUrl,
-    };
+    return { ...ANTHROPIC_COMPATIBLE_DEFAULTS };
   }
-  return PROVIDERS[provider] || PROVIDERS.openai;
+  return PROVIDERS[provider] || {};
 }
 
 // Get target format for provider
