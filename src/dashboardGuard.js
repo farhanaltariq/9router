@@ -28,7 +28,6 @@ const PUBLIC_API_PATHS = [
   "/api/auth/status",
   "/api/auth/oidc",
   "/api/auth/saml",
-  "/api/version",
   "/api/settings/require-login",
 ];
 
@@ -41,7 +40,6 @@ const ALWAYS_PROTECTED = [
   "/api/shutdown",
   "/api/settings/database",
   "/api/version/shutdown",
-  "/api/version/update",
 ];
 
 // Require auth, but allow through if requireLogin is disabled
