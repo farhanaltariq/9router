@@ -349,7 +349,7 @@ export function getHiddenQuotaRows(provider, quotas = [], quotaVisibility = {}) 
 
 /**
  * Parse provider-specific quota structures into normalized array
- * @param {string} provider - Provider name (github, antigravity, codex, kiro, claude)
+ * @param {string} provider - Provider name (github, antigravity, codex)
  * @param {Object} data - Raw quota data from provider
  * @returns {Array<Object>} Normalized quota objects with { name, used, total, resetAt }
  */
@@ -469,44 +469,6 @@ export function parseQuotaData(provider, data) {
         }
         break;
 
-      case "kiro":
-        if (data.quotas) {
-          Object.entries(data.quotas).forEach(([quotaType, quota]) => {
-            normalizedQuotas.push({
-              name: quotaType,
-              used: quota.used || 0,
-              total: quota.total || 0,
-              resetAt: quota.resetAt || null,
-            });
-          });
-        }
-        break;
-
-      case "qoder":
-        // Qoder ships a `user` quota and (optionally) an `organization`
-        // quota, both with same shape: {total, used, remaining, unit, resetAt}.
-        // Skip an organization bucket when its total is 0 — most personal
-        // Qoder accounts won't have one and rendering "0/0" is misleading.
-        // Don't forward Qoder's `remaining` field: it's an absolute credit
-        // count, but getRemainingPercentage / QuotaTable interpret
-        // `remaining` as a 0-100 percentage and would render 348 credits
-        // as "348%". The percentage is computed from used/total instead.
-        if (data.quotas) {
-          Object.entries(data.quotas).forEach(([quotaType, quota]) => {
-            if (quotaType === "organization" && (!quota || (Number(quota.total) || 0) === 0)) {
-              return;
-            }
-            normalizedQuotas.push({
-              name: quotaType === "user" ? "Personal" : quotaType === "organization" ? "Organization" : quotaType,
-              used: quota.used || 0,
-              total: quota.total || 0,
-              unit: quota.unit,
-              resetAt: quota.resetAt || null,
-            });
-          });
-        }
-        break;
-
       case "claude":
         if (data.message) {
           // Handle error message case
@@ -531,24 +493,6 @@ export function parseQuotaData(provider, data) {
         }
         break;
 
-      case "vercel-ai-gateway":
-        // Vercel returns currency credit balance, not request quotas.
-        // The 'Remaining (USD)' row needs explicit remainingPercentage because
-        // its used/total values would otherwise compute the wrong direction
-        // (e.g. used=95.5 / total=100 → 4% instead of 96%).
-        if (data.quotas) {
-          Object.entries(data.quotas).forEach(([name, quota]) => {
-            normalizedQuotas.push({
-              name,
-              used: quota.used || 0,
-              total: quota.total || 0,
-              resetAt: quota.resetAt || null,
-              remainingPercentage: quota.remainingPercentage,
-            });
-          });
-        }
-        break;
-
       case "codebuddy-cn":
         // CodeBuddy CN mixes recurring refill packs ("Monthly"/"Weekly"/...)
         // with one-shot bonus packs ("Bonus Pack N"). Forward `recurring`
@@ -567,68 +511,6 @@ export function parseQuotaData(provider, data) {
         }
         break;
 
-      case "grok-cli":
-        // Grok Build credits (on-demand window + prepaid balance).
-        // Do NOT forward absolute `remaining` — getRemainingPercentage treats
-        // it as a 0–100 percentage (same as Qoder). Use remainingPercentage.
-        if (data.quotas) {
-          Object.entries(data.quotas).forEach(([name, quota]) => {
-            normalizedQuotas.push({
-              name,
-              used: quota.used || 0,
-              total: quota.total || 0,
-              resetAt: quota.resetAt || null,
-              remainingPercentage: quota.remainingPercentage,
-            });
-          });
-        }
-        break;
-
-      case "kimi":
-        // Weekly / Ratelimit from /v1/usages. Prefer remainingPercentage only.
-        if (data.quotas) {
-          Object.entries(data.quotas).forEach(([name, quota]) => {
-            normalizedQuotas.push({
-              name,
-              used: quota.used || 0,
-              total: quota.total || 0,
-              resetAt: quota.resetAt || null,
-              remainingPercentage: quota.remainingPercentage,
-            });
-          });
-        }
-        break;
-
-      case "deepseek":
-        // Credit balance — remainingPercentage only (no absolute remaining).
-        if (data.quotas) {
-          Object.entries(data.quotas).forEach(([name, quota]) => {
-            normalizedQuotas.push({
-              name,
-              used: quota.used || 0,
-              total: quota.total || 0,
-              resetAt: quota.resetAt || null,
-              remainingPercentage: quota.remainingPercentage,
-            });
-          });
-        }
-        break;
-
-      case "groq":
-        // Requests/Tokens rate-limit windows from response headers — absolute
-        // used/total (calculatePercentage derives the bar), like Codex/Kiro.
-        if (data.quotas) {
-          Object.entries(data.quotas).forEach(([name, quota]) => {
-            normalizedQuotas.push({
-              name,
-              used: quota.used || 0,
-              total: quota.total || 0,
-              resetAt: quota.resetAt || null,
-            });
-          });
-        }
-        break;
-
       case "ollama":
         // Session (5h) / Weekly (7d) usage % from ollama.com/api/usage.
         // remainingPercentage only — no absolute remaining (UI treats remaining as %).
@@ -640,22 +522,6 @@ export function parseQuotaData(provider, data) {
               total: quota.total || 0,
               resetAt: quota.resetAt || null,
               remainingPercentage: quota.remainingPercentage,
-            });
-          });
-        }
-        break;
-
-      case "zed":
-        // Edit predictions + optional hosted model_requests; unlimited uses remainingPercentage.
-        if (data.quotas) {
-          Object.entries(data.quotas).forEach(([name, quota]) => {
-            normalizedQuotas.push({
-              name,
-              used: quota.used || 0,
-              total: quota.total || 0,
-              resetAt: quota.resetAt || null,
-              remainingPercentage: quota.remainingPercentage,
-              unlimited: quota.unlimited,
             });
           });
         }
