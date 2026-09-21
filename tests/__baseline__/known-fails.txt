@@ -1,24 +1,184 @@
+tests/auth/saml.test.js :: <collection error>
+tests/translator/bugs-3905-deepseek-tool-type.test.js :: Claude tool `type` defaulting is provider-scoped (#3905) declares the quirk only on the MiniMax providers (registry tripwire)
+tests/translator/bugs-3905-deepseek-tool-type.test.js :: Claude tool `type` defaulting is provider-scoped (#3905) runs only for providers declaring requireClaudeToolType
+tests/translator/bugs-toClaude-context.test.js :: OpenAI → Claude context mapping assistant reasoning_content becomes a thinking block
+tests/translator/thinking-unified.test.js :: applyThinking per provider format aggregator (siliconflow) GLM model → forced openai reasoning_effort
+tests/unit/alibaba-token-plan-provider.test.js :: Alibaba Token Plan provider does not collide with the other three Alibaba key types
+tests/unit/alibaba-token-plan-provider.test.js :: Alibaba Token Plan provider exposes the models the plan actually serves
+tests/unit/alibaba-token-plan-provider.test.js :: Alibaba Token Plan provider is registered as an OpenAI-compatible apikey provider
+tests/unit/alibaba-token-plan-provider.test.js :: Alibaba Token Plan provider targets the Singapore Token Plan host in compatible mode
+tests/unit/claude-header-forwarding.test.js :: DefaultExecutor.buildHeaders() — claude provider sets x-api-key auth when apiKey is provided
+tests/unit/claude-header-forwarding.test.js :: DefaultExecutor.buildHeaders() — claude provider uses static provider defaults when no model is given
 tests/unit/claude-header-forwarding.test.js :: proxyAwareFetch — api.anthropic.com routing routes api.anthropic.com to gotScraping (non-streaming) and returns ok response
-tests/unit/oauth-cursor-auto-import.test.js :: GET /api/oauth/cursor/auto-import extracts tokens using exact keys
-tests/unit/oauth-cursor-auto-import.test.js :: GET /api/oauth/cursor/auto-import falls back to fuzzy key matching on macOS when exact keys are missing
-tests/unit/oauth-cursor-auto-import.test.js :: GET /api/oauth/cursor/auto-import linux uses single hardcoded path and original error message
-tests/unit/oauth-cursor-auto-import.test.js :: GET /api/oauth/cursor/auto-import returns descriptive error if macOS db file exists but cannot be opened
-tests/unit/oauth-cursor-auto-import.test.js :: GET /api/oauth/cursor/auto-import returns login-prompt error when tokens are missing even after fallback
-tests/unit/oauth-cursor-auto-import.test.js :: GET /api/oauth/cursor/auto-import returns not-found when no macOS cursor db paths are accessible
-tests/unit/oauth-cursor-auto-import.test.js :: GET /api/oauth/cursor/auto-import unsupported platform returns 400
-tests/unit/oauth-cursor-auto-import.test.js :: GET /api/oauth/cursor/auto-import unwraps JSON-encoded string values
+tests/unit/codex-image-fetch.test.js :: CodexExecutor image handling execute() prefetches images before sending to upstream
+tests/unit/codex-image-fetch.test.js :: CodexExecutor image handling fetches 1MB remote image and inlines it as base64 data URI
+tests/unit/codex-refresh-token.test.js :: Codex Refresh Token getRefreshLeadMs (early refresh config) should return provider-specific lead time for OAuth providers
+tests/unit/combo-autoswitch.test.js :: detectRequiredCapabilities web_search tool -> search
+tests/unit/combo-autoswitch.test.js :: reorderByCapabilities keeps order when no model matches
+tests/unit/dashboard-guard.test.js :: dashboard guard local-only access rejects local-only route from tunnel host even when requireLogin=false
+tests/unit/dashboard-guard.test.js :: dashboard guard local-only access rejects local-only route when Origin is non-loopback (CSRF block)
+tests/unit/db-benchmark.test.js :: <collection error>
+tests/unit/db-concurrent.test.js :: DB Concurrency — atomic safety 100 parallel saveRequestUsage → no count loss
+tests/unit/db-concurrent.test.js :: DB Concurrency — atomic safety daily summary aggregates correctly under parallel writes
+tests/unit/db-concurrent.test.js :: DB Concurrency — atomic safety mixed concurrent: usage + details + connections + aliases
+tests/unit/db-sqlite-vs-lowdb.test.js :: DB SQLite layer — public API parity mitmAlias: get/set per tool
+tests/unit/deepseek-claude-tools.test.js :: prepareClaudeRequest — provider: deepseek declares the supportedTypes quirk on the provider transport
+tests/unit/deepseek-claude-tools.test.js :: prepareClaudeRequest — provider: deepseek drops `custom` but keeps `web_search_*` when both are present
+tests/unit/deepseek-claude-tools.test.js :: prepareClaudeRequest — provider: deepseek keeps web_search_20250305 and web_search_20260209
+tests/unit/deepseek-claude-tools.test.js :: prepareClaudeRequest — provider: deepseek preserves the `type` field on web_search_* tools (DeepSeek requires it)
+tests/unit/deepseek-usage.test.js :: deepseek registry usage flags is listed for apikey quota dashboard
+tests/unit/deepseek-usage.test.js :: getUsageForProvider(deepseek) GETs /user/balance with Bearer apiKey
+tests/unit/deepseek-usage.test.js :: getUsageForProvider(deepseek) maps balances without absolute remaining (UI treats remaining as %)
+tests/unit/deepseek-usage.test.js :: getUsageForProvider(deepseek) marks plan unavailable when is_available false
+tests/unit/deepseek-usage.test.js :: getUsageForProvider(deepseek) returns message on missing key / 401
+tests/unit/deepseek-usage.test.js :: parseQuotaData(deepseek) forwards remainingPercentage for balance rows
+tests/unit/embeddingsCore.test.js :: buildEmbeddingsHeaders openrouter → adds HTTP-Referer and X-Title headers
+tests/unit/embeddingsCore.test.js :: buildEmbeddingsUrl openai → https://api.openai.com/v1/embeddings
+tests/unit/embeddingsCore.test.js :: buildEmbeddingsUrl openrouter → https://openrouter.ai/api/v1/embeddings
+tests/unit/embeddingsCore.test.js :: buildEmbeddingsUrl vercel-ai-gateway → https://ai-gateway.vercel.sh/v1/embeddings
+tests/unit/fetch-success-clears-account.test.js :: web fetch account state clears a stale provider lock after a successful fetch
+tests/unit/fetch-success-clears-account.test.js :: web fetch account state scopes provider failures to web fetch
+tests/unit/fish-audio-tts.test.js :: Fish Audio TTS provider exposes the four documented models
+tests/unit/fish-audio-tts.test.js :: Fish Audio TTS provider is registered as a TTS-only apikey provider
+tests/unit/fish-audio-tts.test.js :: Fish Audio TTS provider is visible to the generic dispatcher, which reads AI_PROVIDERS
+tests/unit/force-stream-config.test.js :: forceStream provider config keeps forced-stream providers streaming for JSON clients when body.stream is false
+tests/unit/force-stream-config.test.js :: forceStream provider config keeps forced-stream providers streaming for JSON clients when body.stream is undefined
+tests/unit/force-stream-config.test.js :: forceStream provider config only openai/codex/commandcode force streaming
+tests/unit/gemini-native-endpoint.test.js :: Gemini native v1beta endpoint lists Gemini TTS models using standard Google model names
+tests/unit/gemini-tts.test.js :: Gemini TTS preserves an explicit Gemini TTS model and voice pair
+tests/unit/gemini-tts.test.js :: Gemini TTS uses the default Gemini TTS model when only a voice is provided
+tests/unit/gemini-usage-projectid.test.js :: Gemini CLI usage project id resolution normalizes project objects returned by loadCodeAssist
+tests/unit/gemini-usage-projectid.test.js :: Gemini CLI usage project id resolution returns actionable guidance when no project id is available
+tests/unit/gemini-usage-projectid.test.js :: Gemini CLI usage project id resolution uses the projectId stored on the provider connection
+tests/unit/groq-usage.test.js :: getUsageForProvider(groq) GETs the models endpoint with Bearer apiKey
+tests/unit/groq-usage.test.js :: getUsageForProvider(groq) parses request + token rate-limit headers into quotas
+tests/unit/groq-usage.test.js :: getUsageForProvider(groq) returns a soft message (not an error) when no rate-limit headers are present
+tests/unit/groq-usage.test.js :: getUsageForProvider(groq) returns message on missing key / 401
+tests/unit/groq-usage.test.js :: groq registry usage flags is listed for apikey quota dashboard
+tests/unit/hf-model-routing.test.js :: HuggingFace model alias parsing resolves hf alias to huggingface provider
+tests/unit/image-fetch-hardening.test.js :: fetchImageAsBase64 hardening accepts valid PNG from public host
+tests/unit/image-generation.test.js :: handleImageGenerationCore generates image with Gemini format
+tests/unit/image-generation.test.js :: handleImageGenerationCore generates image with Minimax format
+tests/unit/image-generation.test.js :: handleImageGenerationCore generates image with NanoBanana format
+tests/unit/image-generation.test.js :: handleImageGenerationCore generates image with OpenAI format
+tests/unit/image-generation.test.js :: handleImageGenerationCore handles OpenRouter with HTTP-Referer header
+tests/unit/image-generation.test.js :: handleImageGenerationCore handles Vercel AI Gateway image generation as OpenAI-compatible
+tests/unit/minimax-transport-target-format.test.js :: MiniMax-M3 multi-transport routing keeps OpenAI image blocks on the matching OpenAI transport
+tests/unit/minimax-tts.test.js :: MiniMax TTS sends MiniMax T2A payload and converts hex audio to base64 JSON
+tests/unit/minimax-tts.test.js :: MiniMax TTS surfaces MiniMax base_resp errors
+tests/unit/minimax-tts.test.js :: MiniMax TTS uses the default MiniMax voice when no voice is provided
+tests/unit/minimax-usage.test.js :: MiniMax usage includes M-series percent-only buckets that have no count totals
+tests/unit/minimax-usage.test.js :: MiniMax usage keeps non-TTS MiniMax quota rows instead of filtering to text only
+tests/unit/minimax-usage.test.js :: MiniMax usage normalizes M-series percent-only buckets on the coding_plan (countMeansRemaining) endpoint too
+tests/unit/minimax-usage.test.js :: MiniMax usage parses coding-plan TTS quota counts as remaining counts
+tests/unit/minimax-usage.test.js :: MiniMax usage parses token-plan TTS quota counts as used counts
+tests/unit/minimax-usage.test.js :: MiniMax usage prefers the upstream-provided remaining percent when counts are also present
+tests/unit/minimax-usage.test.js :: MiniMax usage renders the M3-era MiniMax-M* wildcard as a friendly series label
+tests/unit/modality-strip.test.js :: stripUnsupportedModalities gemini: keeps inlineData pdf when pdf:true, strips image when vision:false
+tests/unit/modality-strip.test.js :: stripUnsupportedModalities gemini: strips inlineData image by mime when vision:false
 tests/unit/openai-to-claude.test.js :: openaiToClaudeResponse omits empty Read pages tool argument before emitting Claude input deltas
-tests/unit/rtk.test.js :: RTK flag default off, toggle works
-tests/unit/rtk.test.js :: compressMessages (disabled) returns null when disabled
-tests/unit/rtk.test.js :: compressMessages (enabled) compresses Claude array-form tool_result text parts
-tests/unit/rtk.test.js :: compressMessages (enabled) compresses Claude string-form tool_result
-tests/unit/rtk.test.js :: compressMessages (enabled) compresses OpenAI tool message (string content)
-tests/unit/rtk.test.js :: compressMessages (enabled) handles mix of messages without crashing
-tests/unit/rtk.test.js :: compressMessages (enabled) never produces empty content (R14 guard)
-tests/unit/rtk.test.js :: compressMessages (enabled) skips below MIN_COMPRESS_SIZE (<500 bytes)
-tests/unit/rtk.test.js :: compressMessages (enabled) skips is_error tool_result
-tests/unit/rtk.test.js :: compressMessages (enabled) skips when body has no messages
+tests/unit/opencode-go-models.test.js :: OpenCode Go model catalog matches the documented model IDs
+tests/unit/opencode-go-models.test.js :: OpenCode Go multi-endpoint transports declares openai / claude / openai-responses transports
+tests/unit/opencode-go-models.test.js :: OpenCode Go multi-endpoint transports resolveTransport picks the endpoint matching the client sourceFormat
+tests/unit/opencode-go-models.test.js :: OpenCode Go multi-endpoint transports uses x-api-key + anthropicVersion on the claude transport
+tests/unit/opencode-go-models.test.js :: OpenCode Go per-model supportedFormats declares [openai, claude, openai-responses] for DeepSeek models
+tests/unit/opencode-go-models.test.js :: OpenCode Go per-model supportedFormats declares [openai, claude] for MiniMax + Qwen models
+tests/unit/opencode-go-models.test.js :: OpenCode Go per-model supportedFormats declares [openai] only for chat-only models (GLM/Kimi/MiMo) → guards /messages routing
+tests/unit/opencode-go-models.test.js :: OpenCode Go per-model transport guard (chatCore logic) routes DeepSeek + responses-format client to /responses
+tests/unit/opencode-go-models.test.js :: OpenCode Go per-model transport guard (chatCore logic) routes MiniMax/Qwen + claude-format client to /messages
+tests/unit/opencode-go-models.test.js :: OpenCode Go per-model transport guard (chatCore logic) routes Muse Spark (responses-only) to /responses, never to /messages
+tests/unit/opencode-go-session.test.js :: OpenCode Go x-opencode-session adds the prepared session to the actual fetch headers
+tests/unit/opencode-go-session.test.js :: OpenCode Go x-opencode-session ignores an oversized native session and uses the translated identity
+tests/unit/opencode-go-session.test.js :: OpenCode Go x-opencode-session isolates different conversations
+tests/unit/opencode-go-session.test.js :: OpenCode Go x-opencode-session isolates different downstream agents that reuse the same raw id
+tests/unit/opencode-go-session.test.js :: OpenCode Go x-opencode-session keeps the same translated conversation stable across all transports
+tests/unit/opencode-go-session.test.js :: OpenCode Go x-opencode-session preserves a valid native session header case-insensitively
+tests/unit/opencode-go-session.test.js :: OpenCode Go x-opencode-session uses a dedicated executor with request-local session credentials
+tests/unit/opencode-go-session.test.js :: OpenCode Go x-opencode-session uses a stable opaque connection fallback when no session is supplied
+tests/unit/opencode-go-usage.test.js :: OpenCode Go registry usage flags is listed for the API key quota dashboard
+tests/unit/opencode-go-usage.test.js :: getUsageForProvider(opencode-go) distinguishes a missing subscription from invalid credentials
+tests/unit/opencode-go-usage.test.js :: getUsageForProvider(opencode-go) fetches and normalizes subscription usage
+tests/unit/opencode-go-usage.test.js :: getUsageForProvider(opencode-go) rejects responses without a valid quota percentage
+tests/unit/opencode-go-usage.test.js :: getUsageForProvider(opencode-go) reports missing and rejected credentials
+tests/unit/opencode-go-usage.test.js :: getUsageForProvider(opencode-go) reports upstream and network failures
+tests/unit/provider-display-split.test.js :: provider display split (E1) AI_PROVIDERS entries still carry merged display + transport
+tests/unit/provider-display-split.test.js :: provider display split (E1) display fields source from providersDisplay.js
+tests/unit/provider-display-split.test.js :: provider display split (E1) helpers still work after split
+tests/unit/provider-models-minimax-m3.test.js :: MiniMax-M3 model registration does not regress the existing M2.7 / M2.5 / M2.1 entries
+tests/unit/provider-models-minimax-m3.test.js :: MiniMax-M3 model registration exposes MiniMax-M3 through getModelsByProviderId for both provider IDs
+tests/unit/provider-models-minimax-m3.test.js :: MiniMax-M3 model registration includes MiniMax-M3 in PROVIDER_MODELS.minimax
+tests/unit/provider-models-minimax-m3.test.js :: MiniMax-M3 model registration includes MiniMax-M3 in PROVIDER_MODELS['minimax-cn']
+tests/unit/provider-test-models-routing.test.js :: provider test-models route kind routing routes huggingface image models to /api/v1/images/generations
+tests/unit/request-details-tab.test.js :: getDistinctProviders — providers route (no full-row parse) returns unique provider list without parsing data blobs
+tests/unit/request-details-tab.test.js :: request details — tab crash-risk cases oversized field → stored truncated + reparseable (no circular)
+tests/unit/security-audit.test.js :: AUDIT-001: Synchronous restart guard mitmIsRestarting should be reset on max-restarts early return
+tests/unit/security-audit.test.js :: AUDIT-001: Synchronous restart guard mitmIsRestarting should be set before first await expression
+tests/unit/security-audit.test.js :: AUDIT-002: API key masking byApiKey object keys should use masked key, not raw key
+tests/unit/security-audit.test.js :: AUDIT-002: API key masking getUsageHistory should use apiKeyMasked instead of apiKey
+tests/unit/security-audit.test.js :: AUDIT-002: API key masking getUsageStats should use apiKeyMasked in byApiKey entries
+tests/unit/security-audit.test.js :: AUDIT-002: API key masking source should contain maskApiKey function
+tests/unit/security-audit.test.js :: AUDIT-003: Proxy URL validation source should contain validateProxyUrl function
+tests/unit/security-audit.test.js :: AUDIT-004: Atomic lock file for MITM startup manager.js should define LOCK_FILE constant
+tests/unit/security-audit.test.js :: AUDIT-004: Atomic lock file for MITM startup should clean up lock file on all exit paths
+tests/unit/security-audit.test.js :: AUDIT-004: Atomic lock file for MITM startup should use O_EXCL flag (wx) for atomic creation
+tests/unit/security-audit.test.js :: AUDIT-018: XSS escaping in OAuth callback should escape ampersand, angle brackets, and quotes
+tests/unit/security-audit.test.js :: AUDIT-018: XSS escaping in OAuth callback should use safeMessage in rendered HTML, not raw message
+tests/unit/security-audit.test.js :: AUDIT-018: XSS escaping in OAuth callback source should contain escapeHtml function
+tests/unit/thinking-levels-kiro.test.js :: getThinkingLevels for Kiro does not advertise native intensity for legacy Kiro models
+tests/unit/token-refresh-generic.test.js :: Cline refresh uses the extension JSON refresh contract
+tests/unit/token-refresh-generic.test.js :: refreshAccessToken — config-driven profiles claude: JSON body, client_id only (no client_secret)
+tests/unit/token-refresh-generic.test.js :: refreshAccessToken — config-driven profiles dedupes concurrent calls with same refresh token (same dedupKey)
+tests/unit/token-refresh-generic.test.js :: refreshAccessToken — config-driven profiles iflow: Basic Auth header from clientId:clientSecret, form body keeps client_secret
+tests/unit/token-refresh-generic.test.js :: refreshAccessToken — config-driven profiles kimi: merges X-Msh-* headers from credentials.providerSpecificData.deviceId
+tests/unit/translator-helpers-edge.test.js :: normalizeClaudePassthrough — haiku adaptive thinking (docs 11 §1) hoists mid-conversation system messages into top-level system
 tests/unit/translator-request-normalization.test.js :: request normalization claudeToOpenAIRequest flattens text-only content arrays into string
 tests/unit/translator-request-normalization.test.js :: request normalization filterToOpenAIFormat flattens text-only arrays to string
 tests/unit/translator-request-normalization.test.js :: request normalization parseSSELine supports provider raw NDJSON stream lines
 tests/unit/translator-request-normalization.test.js :: request normalization translateRequest keeps /v1/messages Claude->OpenAI text payloads string-safe
+tests/unit/usage-dispatch.test.js :: usage dispatch every supported provider routes to its handler (no fallback message)
+tests/unit/venice-provider.test.js :: Venice AI provider builds into the runtime PROVIDERS map with the openai format default
+tests/unit/venice-provider.test.js :: Venice AI provider enables dynamic model discovery and passthrough
+tests/unit/venice-provider.test.js :: Venice AI provider exposes its seed models (incl. the signature uncensored model)
+tests/unit/venice-provider.test.js :: Venice AI provider is registered as an OpenAI-compatible apikey provider
+tests/unit/video-providers.test.js :: openrouter video adapter POSTs creation to the collection root (no /generations suffix)
+tests/unit/video-providers.test.js :: openrouter video adapter polls GET /videos/{id} and passes the payload through verbatim
+tests/unit/video-providers.test.js :: registry wiring exposes videoConfig + video serviceKind for openrouter and vertex
+tests/unit/video-providers.test.js :: registry wiring registers video-kind models on both providers
+tests/unit/video-providers.test.js :: vertex (veo) video adapter maps a data-URL image onto the Vertex image instance
+tests/unit/video-providers.test.js :: vertex (veo) video adapter maps a failed operation to status failed
+tests/unit/video-providers.test.js :: vertex (veo) video adapter polls via fetchPredictOperation and maps a completed operation
+tests/unit/video-providers.test.js :: vertex (veo) video adapter translates the create body to predictLongRunning and returns a poll-able job id
+tests/unit/xai-video-core.test.js :: handleVideoProxyCore 401 twice → still only one refresh and one retry (no loop)
+tests/unit/xai-video-core.test.js :: handleVideoProxyCore 401 → refreshes once and retries once with the new token
+tests/unit/xai-video-core.test.js :: handleVideoProxyCore API-key accounts (no refreshToken) never attempt refresh on 401
+tests/unit/xai-video-core.test.js :: handleVideoProxyCore failed refresh → 401 propagates with a single upstream call (account flagged for re-auth upstream)
+tests/unit/xai-video-core.test.js :: handleVideoProxyCore forwards a creation POST byte-for-byte and passes request_id through
+tests/unit/xai-video-core.test.js :: handleVideoProxyCore forwards multipart bodies untouched with the original boundary header
+tests/unit/xai-video-core.test.js :: handleVideoProxyCore maps client aborts to 408 without retrying
+tests/unit/xai-video-core.test.js :: handleVideoProxyCore never re-sends a creation POST after a network error
+tests/unit/xai-video-core.test.js :: handleVideoProxyCore passes a failed job (HTTP 200, status failed) through without translating
+tests/unit/xai-video-core.test.js :: handleVideoProxyCore passes done polling payload through verbatim
+tests/unit/xai-video-core.test.js :: handleVideoProxyCore passes pending polling payload through verbatim
+tests/unit/xai-video-core.test.js :: handleVideoProxyCore passes processing polling payload through verbatim
+tests/unit/xai-video-core.test.js :: handleVideoProxyCore sanitizes bearer tokens and credential values out of upstream errors
+tests/unit/xai-video-core.test.js :: handleVideoProxyCore url-encodes the request id when polling
+tests/unit/xai-video-core.test.js :: registry wiring exposes videoConfig for xai
+tests/unit/xai-video-core.test.js :: registry wiring registers grok-imagine-video with kind video (kept out of LLM lists)
+tests/unit/xai-video-handler.test.js :: handleVideoCreate does NOT rotate accounts on a 500 creation error (job may exist upstream)
+tests/unit/xai-video-handler.test.js :: handleVideoCreate forwards multipart bodies byte-exact with default xai provider
+tests/unit/xai-video-handler.test.js :: handleVideoCreate forwards the original raw JSON bytes when no rewrite is needed
+tests/unit/xai-video-handler.test.js :: handleVideoCreate returns the serving connection id in x-9router-connection-id
+tests/unit/xai-video-handler.test.js :: handleVideoCreate rotates to the next account on 401 (auth errors cannot have created a job)
+tests/unit/xai-video-handler.test.js :: handleVideoCreate strips the xai/ prefix from model before forwarding
+tests/unit/xai-video-handler.test.js :: handleVideoGet polls upstream pinned to the x-connection-id account and passes status through
+tests/unit/xai-video-handler.test.js :: handleVideoGet records the failure when polling hits a terminal auth error
+tests/unit/xiaomi-mimo-oauth-proxy.test.js :: xiaomi-mimo OAuth session store drops every session, not just the last one
+tests/unit/xiaomi-mimo-oauth-proxy.test.js :: xiaomi-mimo OAuth session store drops pending sessions when the proxy stops
+tests/unit/xiaomi-mimo-oauth-proxy.test.js :: xiaomi-mimo OAuth session store ignores registrations with a missing state or key
+tests/unit/xiaomi-mimo-oauth-proxy.test.js :: xiaomi-mimo OAuth session store never exposes the private key to callers
+tests/unit/xiaomi-mimo-oauth-session.test.js :: xiaomi-mimo OAuth session lifecycle cleans up a failed session in poll-status and stops the proxy
+tests/unit/xiaomi-mimo-oauth-session.test.js :: xiaomi-mimo OAuth session lifecycle clears the session once /exchange consumed it
+tests/unit/xiaomi-mimo-oauth-session.test.js :: xiaomi-mimo OAuth session lifecycle keeps a finished session alive so /exchange can consume it
+tests/unit/xiaomi-mimo-oauth-session.test.js :: xiaomi-mimo OAuth session lifecycle persists the Desktop passToken onto the connection (Preview models need it)
+tests/unit/xiaomi-mimo-oauth-session.test.js :: xiaomi-mimo OAuth session lifecycle still reports unknown for an unregistered state
+tests/unit/xquik-search-provider.test.js :: Xquik search provider registers a dedicated X search provider with no-charge key validation
