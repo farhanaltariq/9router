@@ -99,7 +99,7 @@ export default function BulkImportCodexModal({ isOpen, onClose, onSuccess }) {
         />
 
         {parseError && (
-          <p className="text-xs text-red-500 break-words">{parseError}</p>
+          <p className="text-xs text-red-500 wrap-break-word">{parseError}</p>
         )}
 
         {result && (

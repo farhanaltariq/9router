@@ -51,7 +51,7 @@ export default function DashboardLayout({ children }) {
                 <span className="material-symbols-outlined text-[18px] leading-5">{style.icon}</span>
                 <div className="min-w-0 flex-1">
                   {n.title ? <p className="text-xs font-semibold mb-0.5">{n.title}</p> : null}
-                  <p className="text-xs whitespace-pre-wrap break-words">{n.message}</p>
+                  <p className="text-xs whitespace-pre-wrap wrap-break-word">{n.message}</p>
                 </div>
                 {n.dismissible ? (
                   <button

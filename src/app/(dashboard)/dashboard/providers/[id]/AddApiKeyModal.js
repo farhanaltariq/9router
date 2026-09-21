@@ -311,7 +311,7 @@ export default function AddApiKeyModal({ isOpen, provider, providerName, isCompa
           </Badge>
         )}
         {error && (
-          <p className="text-xs text-red-500 break-words">{error}</p>
+          <p className="text-xs text-red-500 wrap-break-word">{error}</p>
         )}
         {isCompatible && (
           <p className="text-xs text-text-muted">

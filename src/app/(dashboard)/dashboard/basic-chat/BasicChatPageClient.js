@@ -897,7 +897,7 @@ export default function BasicChatPageClient() {
                         </div>
                       ) : null}
 
-                      <div className="whitespace-pre-wrap break-words text-[15px] leading-7">
+                      <div className="whitespace-pre-wrap wrap-break-word text-[15px] leading-7">
                         {content}
                         {isAssistant && isStreaming && !streamingText ? <span className="inline-block animate-pulse">▋</span> : null}
                       </div>
