@@ -18,8 +18,7 @@ async function getToken() {
   cache.tokenTime = now;
   return cache.token;
 }
-
-export default {
+const __default = {
   noAuth: true,
   async synthesize(text, model) {
     const lang = model || "en";
@@ -52,3 +51,7 @@ export default {
     return { base64, format: "mp3" };
   },
 };
+
+export default __default;
+;
+

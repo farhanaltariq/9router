@@ -207,7 +207,7 @@ export default function AddApiKeyModal({ isOpen, provider, providerName, isCompa
               }
             </p>
             <textarea
-              className="w-full rounded border border-accent/30 bg-sidebar p-2 text-sm font-mono resize-y min-h-[140px] focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full rounded border border-accent/30 bg-sidebar p-2 text-sm font-mono resize-y min-h-35 focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder={bulkPlaceholder}
               value={bulkText}
               onChange={(e) => setBulkText(e.target.value)}
@@ -425,3 +425,4 @@ AddApiKeyModal.propTypes = {
   onBulkDone: PropTypes.func,
   onClose: PropTypes.func.isRequired,
 };
+

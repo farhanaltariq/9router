@@ -11,9 +11,9 @@ import Footer from "./components/Footer";
 export default function LandingPage() {
   const router = useRouter();
   return (
-    <div className="relative text-white font-sans overflow-x-hidden antialiased selection:bg-[#f97815] selection:text-white">
+    <div className="relative text-white font-sans overflow-x-hidden antialiased selection:bg-landing-orange selection:text-white">
       {/* Animated Background */}
-      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-[#181411]">
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-landing-bg">
         {/* Grid pattern */}
         <div className="absolute inset-0 opacity-[0.06]" style={{
           backgroundImage: `linear-gradient(to right, #f97815 1px, transparent 1px), linear-gradient(to bottom, #f97815 1px, transparent 1px)`,
@@ -21,9 +21,9 @@ export default function LandingPage() {
         }}></div>
         
         {/* Animated gradient orbs */}
-        <div className="absolute top-0 left-1/4 w-[700px] h-[700px] bg-[#f97815]/12 rounded-full blur-[130px] animate-blob"></div>
-        <div className="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[130px] animate-blob" style={{ animationDelay: '2s', animationDuration: '22s' }}></div>
-        <div className="absolute bottom-0 left-1/2 w-[650px] h-[650px] bg-blue-500/8 rounded-full blur-[130px] animate-blob" style={{ animationDelay: '4s', animationDuration: '25s' }}></div>
+        <div className="absolute top-0 left-1/4 w-175 h-175 bg-landing-orange/12 rounded-full blur-[130px] animate-blob"></div>
+        <div className="absolute top-1/3 right-1/4 w-150 h-150 bg-purple-500/10 rounded-full blur-[130px] animate-blob" style={{ animationDelay: '2s', animationDuration: '22s' }}></div>
+        <div className="absolute bottom-0 left-1/2 w-162.5 h-162.5 bg-blue-500/8 rounded-full blur-[130px] animate-blob" style={{ animationDelay: '4s', animationDuration: '25s' }}></div>
         
         {/* Vignette effect */}
         <div className="absolute inset-0" style={{
@@ -58,13 +58,13 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <button 
                 onClick={() => router.push("/dashboard")}
-                className="w-full sm:w-auto h-14 px-10 rounded-lg bg-[#f97815] hover:bg-[#e0650a] text-[#181411] text-lg font-bold transition-all shadow-[0_0_20px_rgba(249,120,21,0.5)]"
+                className="w-full sm:w-auto h-14 px-10 rounded-lg bg-landing-orange hover:bg-landing-orange-hover text-[#181411] text-lg font-bold transition-all shadow-[0_0_20px_rgba(249,120,21,0.5)]"
               >
                 Start Free
               </button>
               <button 
                 onClick={() => window.open("https://github.com/decolua/9router#readme", "_blank")}
-                className="w-full sm:w-auto h-14 px-10 rounded-lg border border-[#3a2f27] hover:bg-[#23180f] text-white text-lg font-bold transition-all"
+                className="w-full sm:w-auto h-14 px-10 rounded-lg border border-landing-border hover:bg-landing-surface text-white text-lg font-bold transition-all"
               >
                 Read Documentation
               </button>
@@ -103,4 +103,7 @@ export default function LandingPage() {
     </div>
   );
 }
+
+
+
 

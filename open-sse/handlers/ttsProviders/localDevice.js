@@ -77,11 +77,14 @@ async function synthesizeMacOrWin(text, voiceId) {
     await rm(dir, { recursive: true, force: true });
   }
 }
-
-export default {
+const __default = {
   noAuth: true,
   async synthesize(text, model) {
     const base64 = await synthesizeMacOrWin(text, model);
     return { base64, format: "mp3" };
   },
 };
+
+export default __default;
+;
+

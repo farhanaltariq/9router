@@ -57,8 +57,37 @@ export default function CombosPage() {
   const { copied, copy } = useCopyToClipboard();
 
   useEffect(() => {
-    fetchData();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const load = async () => {
+      try {
+        const [combosRes, providersRes, settingsRes] = await Promise.all([
+          fetch("/api/combos"),
+          fetch("/api/providers"),
+          fetch("/api/settings"),
+        ]);
+        const combosData = await combosRes.json();
+        const providersData = await providersRes.json();
+        const settingsData = settingsRes.ok ? await settingsRes.json() : {};
+
+        // Only LLM combos here - webSearch/webFetch combos belong to media-providers/web
+        if (combosRes.ok) setCombos((combosData.combos || []).filter(c => !c.kind || c.kind === "llm"));
+        if (providersRes.ok) {
+          setActiveProviders(providersData.connections || []);
+        }
+        setComboStrategies(settingsData.comboStrategies || {});
+        const rawAdapter = settingsData.capacityAdapter || {};
+        const normalized = {};
+        for (const cap of CAPACITY_ADAPTER_CAPS) {
+          normalized[cap.key] = normalizeCapEntry(rawAdapter[cap.key]);
+        }
+        setCapacityAdapter(normalized);
+      } catch (error) {
+        console.log("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
 
   const fetchData = async () => {
     try {
@@ -70,8 +99,7 @@ export default function CombosPage() {
       const combosData = await combosRes.json();
       const providersData = await providersRes.json();
       const settingsData = settingsRes.ok ? await settingsRes.json() : {};
-      
-      // Only LLM combos here - webSearch/webFetch combos belong to media-providers/web
+
       if (combosRes.ok) setCombos((combosData.combos || []).filter(c => !c.kind || c.kind === "llm"));
       if (providersRes.ok) {
         setActiveProviders(providersData.connections || []);
@@ -217,7 +245,7 @@ export default function CombosPage() {
         <Card>
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
-              <span className="material-symbols-outlined text-[32px]">layers</span>
+              <span className="material-symbols-outlined text-8">layers</span>
             </div>
             <p className="text-text-main font-medium mb-1">No combos yet</p>
             <p className="text-sm text-text-muted mb-4">Create model combos with fallback support</p>
@@ -353,7 +381,7 @@ function ComboCard({ combo, getCaps, activeProviders = [], copied, onCopy, onEdi
         {/* Actions */}
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:gap-3 sm:shrink-0">
           {/* Strategy selector — always visible */}
-          <div className="w-full sm:w-[200px]">
+          <div className="w-full sm:w-50">
             <Select
               options={STRATEGY_OPTIONS}
               value={current}
@@ -494,13 +522,13 @@ function CapacityAdapterCap({ cap, entry, onChange, activeProviders, getCaps }) 
                     <span>{model}</span>
                     <CapacityBadges caps={getCaps?.(model)} />
                     <button onClick={() => handleMove(index, -1)} disabled={index === 0} className={`leading-none opacity-0 group-hover/chip:opacity-100 ${index === 0 ? "text-text-muted/20" : "text-text-muted hover:text-primary"}`}>
-                      <span className="material-symbols-outlined text-[12px]">arrow_upward</span>
+                      <span className="material-symbols-outlined text-3">arrow_upward</span>
                     </button>
                     <button onClick={() => handleMove(index, 1)} disabled={index === models.length - 1} className={`leading-none opacity-0 group-hover/chip:opacity-100 ${index === models.length - 1 ? "text-text-muted/20" : "text-text-muted hover:text-primary"}`}>
-                      <span className="material-symbols-outlined text-[12px]">arrow_downward</span>
+                      <span className="material-symbols-outlined text-3">arrow_downward</span>
                     </button>
                     <button onClick={() => handleRemove(index)} className="leading-none opacity-0 group-hover/chip:opacity-100 text-text-muted hover:text-red-500">
-                      <span className="material-symbols-outlined text-[12px]">close</span>
+                      <span className="material-symbols-outlined text-3">close</span>
                     </button>
                   </code>
                 ))
@@ -626,7 +654,7 @@ function ModelItem({ id, index, model, isFirst, isLast, onEdit, onMoveUp, onMove
           className={`p-0.5 rounded ${isFirst ? "text-text-muted/20 cursor-not-allowed" : "text-text-muted hover:text-primary hover:bg-black/5 dark:hover:bg-white/5"}`}
           title="Move up"
         >
-          <span className="material-symbols-outlined text-[12px]">arrow_upward</span>
+          <span className="material-symbols-outlined text-3">arrow_upward</span>
         </button>
         <button
           onClick={onMoveDown}
@@ -634,7 +662,7 @@ function ModelItem({ id, index, model, isFirst, isLast, onEdit, onMoveUp, onMove
           className={`p-0.5 rounded ${isLast ? "text-text-muted/20 cursor-not-allowed" : "text-text-muted hover:text-primary hover:bg-black/5 dark:hover:bg-white/5"}`}
           title="Move down"
         >
-          <span className="material-symbols-outlined text-[12px]">arrow_downward</span>
+          <span className="material-symbols-outlined text-3">arrow_downward</span>
         </button>
       </div>
 
@@ -644,7 +672,7 @@ function ModelItem({ id, index, model, isFirst, isLast, onEdit, onMoveUp, onMove
         className="p-0.5 hover:bg-red-500/10 rounded text-text-muted hover:text-red-500 transition-all"
         title="Remove"
       >
-        <span className="material-symbols-outlined text-[12px]">close</span>
+        <span className="material-symbols-outlined text-3">close</span>
       </button>
     </div>
   );
@@ -678,19 +706,20 @@ function ComboFormModal({ isOpen, combo, onClose, onSave, activeProviders, kindF
     }
   };
 
-  const fetchModalData = async () => {
-    try {
-      const aliasesRes = await fetch("/api/models/alias");
-      if (!aliasesRes.ok) return;
-      const aliasesData = await aliasesRes.json();
-      setModelAliases(aliasesData.aliases || {});
-    } catch (error) {
-      console.error("Error fetching modal data:", error);
-    }
-  };
 
   useEffect(() => {
-    if (isOpen) fetchModalData();
+    if (!isOpen) return;
+    const load = async () => {
+      try {
+        const aliasesRes = await fetch("/api/models/alias");
+        if (!aliasesRes.ok) return;
+        const aliasesData = await aliasesRes.json();
+        setModelAliases(aliasesData.aliases || {});
+      } catch (error) {
+        console.error("Error fetching modal data:", error);
+      }
+    };
+    load();
   }, [isOpen]);
 
   const validateName = (value) => {
@@ -777,14 +806,14 @@ function ComboFormModal({ isOpen, combo, onClose, onSave, activeProviders, kindF
             <label className="text-sm font-medium mb-1.5 block">Models</label>
 
             {models.length === 0 ? (
-              <div className="text-center py-4 border border-dashed border-black/10 dark:border-white/10 rounded-lg bg-black/[0.01] dark:bg-white/[0.01]">
+              <div className="text-center py-4 border border-dashed border-black/10 dark:border-white/10 rounded-lg bg-black/1 dark:bg-white/1">
                 <span className="material-symbols-outlined text-text-muted text-xl mb-1">layers</span>
                 <p className="text-xs text-text-muted">No models added yet</p>
               </div>
             ) : (
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd} modifiers={[restrictToVerticalAxis, restrictToParentElement]}>
               <SortableContext items={modelItems.map((m) => m.uid)} strategy={verticalListSortingStrategy}>
-                <div className="flex max-h-[55vh] min-w-0 flex-col gap-1 overflow-y-auto sm:max-h-[350px]">
+                <div className="flex max-h-220 min-w-0 flex-col gap-1 overflow-y-auto sm:max-h-87.5">
                   {modelItems.map(({ uid, model }, index) => (
                     <ModelItem
                       key={uid}
@@ -813,7 +842,7 @@ function ComboFormModal({ isOpen, combo, onClose, onSave, activeProviders, kindF
               onClick={() => setShowModelSelect(true)}
               className="w-full mt-2 py-2 border border-dashed border-black/10 dark:border-white/10 rounded-lg text-xs text-primary font-medium hover:text-primary hover:border-primary/50 transition-colors flex items-center justify-center gap-1"
             >
-              <span className="material-symbols-outlined text-[16px]">add</span>
+              <span className="material-symbols-outlined text-4">add</span>
               Add Model
             </button>
           </div>
@@ -853,3 +882,7 @@ function ComboFormModal({ isOpen, combo, onClose, onSave, activeProviders, kindF
     </>
   );
 }
+
+
+
+

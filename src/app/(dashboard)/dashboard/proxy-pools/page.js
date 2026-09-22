@@ -66,7 +66,24 @@ export default function ProxyPoolsPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showRelayMenu]);
 
-  const fetchProxyPools = useCallback(async () => {
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch("/api/proxy-pools?includeUsage=true", { cache: "no-store" });
+        const data = await res.json();
+        if (res.ok) {
+          setProxyPools(data.proxyPools || []);
+        }
+      } catch (error) {
+        console.log("Error fetching proxy pools:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const fetchProxyPools = async () => {
     try {
       const res = await fetch("/api/proxy-pools?includeUsage=true", { cache: "no-store" });
       const data = await res.json();
@@ -78,11 +95,7 @@ export default function ProxyPoolsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    fetchProxyPools();
-  }, [fetchProxyPools]);
+  };
 
   const resetForm = () => {
     setEditingProxyPool(null);
@@ -327,10 +340,8 @@ export default function ProxyPoolsPage() {
     }
   };
 
-  // Cleanup selectedIds when pools change
-  useEffect(() => {
-    setSelectedIds((prev) => prev.filter((id) => proxyPools.some((p) => p.id === id)));
-  }, [proxyPools]);
+  // Prune stale selected ids — derive each render instead of an effect.
+  const liveSelectedIds = selectedIds.filter((id) => proxyPools.some((p) => p.id === id));
 
   const openBatchImportModal = () => {
     setBatchImportText("");
@@ -602,7 +613,7 @@ export default function ProxyPoolsPage() {
                   }}
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-text-main transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                 >
-                  <span className="material-symbols-outlined text-[20px] text-orange-500">cloud</span>
+                  <span className="material-symbols-outlined text-5 text-orange-500">cloud</span>
                   Cloudflare Relay
                 </button>
                 <button
@@ -612,7 +623,7 @@ export default function ProxyPoolsPage() {
                   }}
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-text-main transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                 >
-                  <span className="material-symbols-outlined text-[20px] text-blue-500">cloud_upload</span>
+                  <span className="material-symbols-outlined text-5 text-blue-500">cloud_upload</span>
                   Vercel Relay
                 </button>
                 <button
@@ -622,7 +633,7 @@ export default function ProxyPoolsPage() {
                   }}
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-text-main transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                 >
-                  <span className="material-symbols-outlined text-[20px] text-green-500">terminal</span>
+                  <span className="material-symbols-outlined text-5 text-green-500">terminal</span>
                   Deno Relay
                 </button>
               </div>
@@ -697,7 +708,7 @@ export default function ProxyPoolsPage() {
             <Button icon="add" onClick={openCreateModal}>Add Proxy Pool</Button>
           </div>
         ) : (
-          <div className="flex flex-col divide-y divide-black/[0.04] dark:divide-white/[0.05]">
+          <div className="flex flex-col divide-y divide-black/4 dark:divide-white/5">
             {proxyPools.map((pool) => (
               <div key={pool.id} className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-3 min-w-0 flex-1">
@@ -709,7 +720,7 @@ export default function ProxyPoolsPage() {
                   />
                   <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="min-w-0 max-w-full truncate text-sm font-medium sm:max-w-[18rem]">{pool.name}</p>
+                    <p className="min-w-0 max-w-full truncate text-sm font-medium sm:max-w-72">{pool.name}</p>
                     <Badge variant={getStatusVariant(pool.testStatus)} size="sm" dot>
                       {pool.testStatus || "unknown"}
                     </Badge>
@@ -790,7 +801,7 @@ export default function ProxyPoolsPage() {
               value={batchImportText}
               onChange={(e) => setBatchImportText(e.target.value)}
               placeholder={"http://user:pass@127.0.0.1:7897\n127.0.0.1:7897:user:pass"}
-              className="w-full min-h-[180px] py-2 px-3 text-sm text-text-main bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-md focus:ring-1 focus:ring-primary/30 focus:border-primary/50 focus:outline-none transition-all"
+              className="w-full min-h-45 py-2 px-3 text-sm text-text-main bg-white dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-md focus:ring-1 focus:ring-primary/30 focus:border-primary/50 focus:outline-none transition-all"
             />
             <p className="text-xs text-text-muted mt-1">
               Supported formats: protocol://user:pass@host:port, host:port:user:pass
@@ -895,7 +906,7 @@ export default function ProxyPoolsPage() {
             value={cloudflareForm.apiToken}
             onChange={(e) => setCloudflareForm((prev) => ({ ...prev, apiToken: e.target.value }))}
             placeholder="your-cloudflare-api-token"
-            hint={<>Requires "Workers Scripts: Edit" permission. <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Get token →</a></>}
+            hint={<>Requires &ldquo;Workers Scripts: Edit&rdquo; permission. <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Get token →</a></>}
             type="password"
           />
           <Input
@@ -1061,3 +1072,8 @@ export default function ProxyPoolsPage() {
     </div>
   );
 }
+
+
+
+
+

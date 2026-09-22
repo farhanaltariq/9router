@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import PropTypes from "prop-types";
 import {
   ReactFlow,
@@ -55,9 +56,11 @@ function ProviderNode({ data }) {
         style={{ backgroundColor: `${color}15` }}
       >
         {imageUrl && !imgError ? (
-          <img
+          <Image
             src={imageUrl}
             alt={label}
+            width={24}
+            height={24}
             className="w-6 h-6 rounded-sm object-contain"
             loading="lazy"
             decoding="async"
@@ -111,9 +114,11 @@ function RouterNode({ data }) {
       <Handle type="source" position={Position.Left} id="left" className="bg-transparent! border-0! w-0! h-0!" />
       <Handle type="source" position={Position.Right} id="right" className="bg-transparent! border-0! w-0! h-0!" />
 
-      <img
+      <Image
         src="/favicon.svg"
         alt="9Router"
+        width={24}
+        height={24}
         className={`w-6 h-6 mr-2 ${powering ? "topology-router-icon" : ""}`}
         loading="lazy"
         decoding="async"
@@ -496,3 +501,4 @@ ProviderTopology.propTypes = {
   lastProvider: PropTypes.string,
   errorProvider: PropTypes.string,
 };
+

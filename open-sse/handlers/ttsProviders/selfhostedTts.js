@@ -9,8 +9,7 @@ import { Buffer } from "node:buffer";
 const DEFAULT_BASE_URL = "http://localhost:8880";
 const DEFAULT_MODEL = "kokoro";
 const DEFAULT_VOICE = "af_heart";
-
-export default {
+const __default = {
   async synthesize(text, model, credentials, responseFormat = "mp3") {
     // Accept either providerSpecificData.baseUrl (how the custom embedding and
     // STT providers carry it) or a bare credentials.baseUrl (how the OpenAI TTS
@@ -67,3 +66,7 @@ export default {
     return { base64: Buffer.from(buf).toString("base64"), format: responseFormat };
   },
 };
+
+export default __default;
+;
+

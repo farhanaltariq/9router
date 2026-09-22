@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import PropTypes from "prop-types";
+import Image from "next/image";
 import { getProviderIconSrc, markProviderIconMissing } from "@/shared/utils/providerIcon";
 
 function resolveSrc(src, providerId) {
@@ -41,14 +42,13 @@ export default function ProviderIcon({
   }
 
   return (
-    <img
+    <Image
       src={effectiveSrc}
       alt={alt}
       width={size}
       height={size}
       className={className}
-      loading="lazy"
-      decoding="async"
+      unoptimized
       onError={() => {
         const m = effectiveSrc.match(/^\/providers\/([^/]+)\.png$/i);
         if (m) markProviderIconMissing(m[1]);
@@ -68,3 +68,4 @@ ProviderIcon.propTypes = {
   fallbackText: PropTypes.string,
   fallbackColor: PropTypes.string,
 };
+

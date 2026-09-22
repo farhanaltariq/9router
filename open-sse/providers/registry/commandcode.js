@@ -1,4 +1,5 @@
-export default {
+
+const __default = {
   id: "commandcode",
   priority: 100,
   alias: "commandcode",
@@ -41,3 +42,7 @@ export default {
     { id: "stepfun/Step-3.5-Flash", name: "Step 3.5 Flash" },
   ],
 };
+
+export default __default;
+;
+

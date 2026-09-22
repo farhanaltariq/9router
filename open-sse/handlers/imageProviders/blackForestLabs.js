@@ -3,8 +3,7 @@ import { sleep, nowSec, POLL_INTERVAL_MS, POLL_TIMEOUT_MS } from "./_base.js";
 import { PROVIDER_MEDIA } from "../../providers/index.js";
 
 const BASE_URL = PROVIDER_MEDIA["black-forest-labs"]?.imageConfig?.baseUrl;
-
-export default {
+const __default = {
   async: true,
   buildUrl: (model) => `${BASE_URL}/${model}`,
   buildHeaders: (creds) => {
@@ -42,3 +41,7 @@ export default {
     return { created: nowSec(), data: [] };
   },
 };
+
+export default __default;
+;
+

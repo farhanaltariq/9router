@@ -35,15 +35,15 @@ function ModelItem({ index, model, isFirst, isLast, onEdit, onMoveUp, onMoveDown
       <div className="flex shrink-0 items-center gap-0.5">
         <button onClick={onMoveUp} disabled={isFirst}
           className={`p-0.5 rounded ${isFirst ? "text-text-muted/20 cursor-not-allowed" : "text-text-muted hover:text-primary hover:bg-black/5 dark:hover:bg-white/5"}`} title="Move up">
-          <span className="material-symbols-outlined text-[12px]">arrow_upward</span>
+          <span className="material-symbols-outlined text-3">arrow_upward</span>
         </button>
         <button onClick={onMoveDown} disabled={isLast}
           className={`p-0.5 rounded ${isLast ? "text-text-muted/20 cursor-not-allowed" : "text-text-muted hover:text-primary hover:bg-black/5 dark:hover:bg-white/5"}`} title="Move down">
-          <span className="material-symbols-outlined text-[12px]">arrow_downward</span>
+          <span className="material-symbols-outlined text-3">arrow_downward</span>
         </button>
       </div>
       <button onClick={onRemove} className="p-0.5 hover:bg-red-500/10 rounded text-text-muted hover:text-red-500 transition-all" title="Remove">
-        <span className="material-symbols-outlined text-[12px]">close</span>
+        <span className="material-symbols-outlined text-3">close</span>
       </button>
     </div>
   );
@@ -139,7 +139,7 @@ export default function ComboFormModal({ isOpen, combo, onClose, onSave, activeP
                 <p className="text-xs text-text-muted">No models added yet</p>
               </div>
             ) : (
-              <div className="flex max-h-[55vh] min-w-0 flex-col gap-1 overflow-y-auto sm:max-h-[350px]">
+              <div className="flex max-h-220 min-w-0 flex-col gap-1 overflow-y-auto sm:max-h-87.5">
                 {models.map((model, index) => (
                   <ModelItem key={index} index={index} model={model}
                     isFirst={index === 0} isLast={index === models.length - 1}
@@ -152,7 +152,7 @@ export default function ComboFormModal({ isOpen, combo, onClose, onSave, activeP
             )}
             <button onClick={() => setShowModelSelect(true)}
               className="w-full mt-2 py-2 border border-dashed border-black/10 dark:border-white/10 rounded-lg text-xs text-primary font-medium hover:text-primary hover:border-primary/50 transition-colors flex items-center justify-center gap-1">
-              <span className="material-symbols-outlined text-[16px]">add</span>
+              <span className="material-symbols-outlined text-4">add</span>
               Add Model
             </button>
           </div>
@@ -176,3 +176,5 @@ export default function ComboFormModal({ isOpen, combo, onClose, onSave, activeP
     </>
   );
 }
+
+

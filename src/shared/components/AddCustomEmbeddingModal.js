@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { Modal, Input, Button, Badge } from "@/shared/components";
 
@@ -20,7 +20,12 @@ export default function AddCustomEmbeddingModal({ isOpen, onClose, onCreated, on
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState(null);
 
-  useEffect(() => {
+  // Sync form when modal opens / switches between add and edit — adjust state
+  // during render instead of an effect.
+  const [prevEmbedKey, setPrevEmbedKey] = useState(null);
+  const embedKey = isOpen ? (isEdit ? "edit" : "new") : "closed";
+  if (prevEmbedKey !== embedKey) {
+    setPrevEmbedKey(embedKey);
     if (!isOpen) return;
     setValidationResult(null);
     setCheckKey("");
@@ -34,7 +39,7 @@ export default function AddCustomEmbeddingModal({ isOpen, onClose, onCreated, on
     } else {
       setFormData({ name: "", prefix: "", baseUrl: DEFAULT_BASE_URL });
     }
-  }, [isOpen, isEdit, node]);
+  }
 
   const handleSubmit = async () => {
     if (!formData.name.trim() || !formData.prefix.trim() || !formData.baseUrl.trim()) return;
@@ -181,3 +186,4 @@ AddCustomEmbeddingModal.propTypes = {
     baseUrl: PropTypes.string,
   }),
 };
+

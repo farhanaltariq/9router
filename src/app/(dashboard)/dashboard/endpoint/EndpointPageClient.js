@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import { Card, Button, Input, Modal, CardSkeleton, Toggle, ConfirmModal } from "@/shared/components";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
@@ -28,19 +28,6 @@ export default function APIPageClient({ machineId }) {
 
   const { copied, copy } = useCopyToClipboard();
 
-  const loadSettings = async () => {
-    try {
-      const res = await fetch("/api/settings");
-      if (res.ok) {
-        const data = await res.json();
-        setRequireApiKey(data.requireApiKey || false);
-        setRequireLogin(data.requireLogin !== false);
-        setHasPassword(data.hasPassword || false);
-      }
-    } catch (error) {
-      console.log("Error loading settings:", error);
-    }
-  };
 
   const handleRequireApiKey = async (value) => {
     try {
@@ -55,39 +42,58 @@ export default function APIPageClient({ machineId }) {
     }
   };
 
-  const fetchData = async () => {
-    try {
-      const fetchKeys = async () => {
-        const res = await fetch("/api/keys");
-        if (!res.ok) return [];
-        const data = await res.json();
-        return data.keys || [];
-      };
-
-      let existing = await fetchKeys();
-      // Auto-provision a default key for first-time users so the endpoint works out of the box.
-      if (existing.length === 0) {
-        try {
-          const createRes = await fetch("/api/keys", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: "Default Key" }),
-          });
-          if (createRes.ok) existing = await fetchKeys();
-        } catch { /* fall through to empty render */ }
-      }
-      setKeys(existing);
-    } catch (error) {
-      console.log("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Pure fetcher (no setState) — safe to call from effects and handlers.
+  const fetchKeysData = useCallback(async () => {
+    const res = await fetch("/api/keys");
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.keys || [];
+  }, []);
 
   useEffect(() => {
-    fetchData();
-    loadSettings();
-  }, []);
+    const loadData = async () => {
+      try {
+        let existing = await fetchKeysData();
+        // Auto-provision a default key for first-time users so the endpoint works out of the box.
+        if (existing.length === 0) {
+          try {
+            const createRes = await fetch("/api/keys", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name: "Default Key" }),
+            });
+            if (createRes.ok) existing = await fetchKeysData();
+          } catch { /* fall through to empty render */ }
+        }
+        setKeys(existing);
+      } catch (error) {
+        console.log("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+
+      const load = async () => {
+        try {
+          const res = await fetch("/api/settings");
+          if (res.ok) {
+            const data = await res.json();
+            setRequireApiKey(data.requireApiKey || false);
+            setRequireLogin(data.requireLogin !== false);
+            setHasPassword(data.hasPassword || false);
+          }
+        } catch (error) {
+          console.log("Error loading settings:", error);
+        }
+      };
+      load();
+    };
+    loadData();
+  }, [fetchKeysData]);
+
+  const refreshKeys = async () => {
+    const existing = await fetchKeysData();
+    setKeys(existing);
+  };
 
   const handleCreateKey = async () => {
     if (!newKeyName.trim()) return;
@@ -102,7 +108,7 @@ export default function APIPageClient({ machineId }) {
 
       if (res.ok) {
         setCreatedKey(data.key);
-        await fetchData();
+        await refreshKeys();
         setNewKeyName("");
         setShowAddModal(false);
       }
@@ -234,7 +240,7 @@ export default function APIPageClient({ machineId }) {
         {keys.length === 0 ? (
           <div className="text-center py-12">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
-              <span className="material-symbols-outlined text-[32px]">vpn_key</span>
+              <span className="material-symbols-outlined text-8">vpn_key</span>
             </div>
             <p className="text-text-main font-medium mb-1">No API keys yet</p>
             <p className="text-sm text-text-muted mb-4">Create your first API key to get started</p>
@@ -398,3 +404,5 @@ export default function APIPageClient({ machineId }) {
 APIPageClient.propTypes = {
   machineId: PropTypes.string.isRequired,
 };
+
+

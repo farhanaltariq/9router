@@ -1,6 +1,5 @@
 import { ANTIGRAVITY_IDE_BASE_URL, ANTIGRAVITY_IDE_USER_AGENT, ANTIGRAVITY_OAUTH_CLIENT } from "../shared.js";
-
-export default {
+const __default = {
   id: "antigravity",
   priority: 20,
   alias: "ag",
@@ -95,3 +94,7 @@ export default {
     usage: true,
   },
 };
+
+export default __default;
+;
+

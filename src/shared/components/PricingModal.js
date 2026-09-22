@@ -9,13 +9,9 @@ export default function PricingModal({ isOpen, onClose, onSave }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      loadPricing();
-    }
-  }, [isOpen]);
-
-  const loadPricing = async () => {
-    setLoading(true);
+    if (!isOpen) return;
+    const load = async () => {
+      setLoading(true);
     try {
       const response = await fetch("/api/pricing");
       if (response.ok) {
@@ -27,13 +23,15 @@ export default function PricingModal({ isOpen, onClose, onSave }) {
         setPricingData(defaults);
       }
     } catch (error) {
-      console.error("Failed to load pricing:", error);
-      const defaults = getDefaultPricing();
-      setPricingData(defaults);
-    } finally {
-      setLoading(false);
-    }
-  };
+            console.error("Failed to load pricing:", error);
+            const defaults = getDefaultPricing();
+            setPricingData(defaults);
+          } finally {
+            setLoading(false);
+          }
+        };
+        load();
+      }, [isOpen]);
 
   const handlePricingChange = (provider, model, field, value) => {
     const numValue = parseFloat(value);
@@ -95,7 +93,7 @@ export default function PricingModal({ isOpen, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-bg-base border border-border rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-bg-base border border-border rounded-lg shadow-xl max-w-6xl w-full max-h-360 overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h2 className="text-xl font-semibold">Pricing Configuration</h2>

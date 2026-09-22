@@ -3,8 +3,7 @@ import { sleep, nowSec, sizeToAspectRatio, POLL_INTERVAL_MS, POLL_TIMEOUT_MS } f
 import { PROVIDER_MEDIA } from "../../providers/index.js";
 
 const BASE_URL = PROVIDER_MEDIA["fal-ai"]?.imageConfig?.baseUrl;
-
-export default {
+const __default = {
   async: true,
   buildUrl: (model) => `${BASE_URL}/${model}`,
   buildHeaders: (creds) => {
@@ -40,3 +39,7 @@ export default {
     return { created: nowSec(), data: images.map((img) => ({ url: img.url || img })) };
   },
 };
+
+export default __default;
+;
+

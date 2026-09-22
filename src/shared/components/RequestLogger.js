@@ -9,20 +9,45 @@ export default function RequestLogger() {
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   useEffect(() => {
-    fetchLogs();
+    const load = async (showLoading = true) => {
+      if (showLoading) setLoading(true);
+      try {
+        const res = await fetch("/api/usage/request-logs");
+        if (res.ok) {
+          const data = await res.json();
+          setLogs(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch logs:", error);
+      } finally {
+        if (showLoading) setLoading(false);
+      }
+    };
+    load();
   }, []);
 
   useEffect(() => {
     let interval;
     if (autoRefresh) {
       interval = setInterval(() => {
-        fetchLogs(false);
+        (async () => {
+          try {
+            const res = await fetch("/api/usage/request-logs");
+            if (res.ok) {
+              const data = await res.json();
+              setLogs(data);
+            }
+          } catch (error) {
+            console.error("Failed to fetch logs:", error);
+          }
+        })();
       }, 3000);
     }
     return () => clearInterval(interval);
   }, [autoRefresh]);
 
-  const fetchLogs = async (showLoading = true) => {
+  // Export-style helper retained for callers that pass in showLoading=false.
+  const fetchLogs = async (showLoading = false) => {
     if (showLoading) setLoading(true);
     try {
       const res = await fetch("/api/usage/request-logs");
@@ -59,7 +84,7 @@ export default function RequestLogger() {
       </div>
 
       <Card className="overflow-hidden bg-black/5 dark:bg-black/20">
-        <div className="p-0 overflow-x-auto max-h-[600px] overflow-y-auto font-mono text-xs">
+        <div className="p-0 overflow-x-auto max-h-150 overflow-y-auto font-mono text-xs">
           {loading && logs.length === 0 ? (
             <div className="p-8 text-center text-text-muted">Loading logs...</div>
           ) : logs.length === 0 ? (
@@ -96,7 +121,7 @@ export default function RequestLogger() {
                           {parts[2]}
                         </span>
                       </td>
-                      <td className="px-3 py-1.5 border-r border-border truncate max-w-[150px]" title={parts[3]}>{parts[3]}</td>
+                      <td className="px-3 py-1.5 border-r border-border truncate max-w-37.5" title={parts[3]}>{parts[3]}</td>
                       <td className="px-3 py-1.5 border-r border-border text-right text-primary">{parts[4]}</td>
                       <td className="px-3 py-1.5 border-r border-border text-right text-success">{parts[5]}</td>
                       <td className={`px-3 py-1.5 font-bold ${isSuccess ? 'text-success' :
@@ -119,3 +144,8 @@ export default function RequestLogger() {
     </div>
   );
 }
+
+
+
+
+

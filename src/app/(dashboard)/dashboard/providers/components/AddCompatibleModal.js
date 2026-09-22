@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { Badge, Button, Input, Modal, Select } from "@/shared/components";
 
@@ -51,7 +51,11 @@ function AddCompatibleModal({ variant, isOpen, onClose, onCreated }) {
   const [validationResult, setValidationResult] = useState(null);
 
   // openai: reset baseUrl when apiType changes; anthropic: reset checks when opened
-  useEffect(() => {
+  // — adjust state during render instead of an effect
+  const [prevResetKey, setPrevResetKey] = useState(null);
+  const resetKey = config.hasApiType ? formData.apiType : (isOpen ? "open" : "closed");
+  if (prevResetKey !== resetKey) {
+    setPrevResetKey(resetKey);
     if (config.hasApiType) {
       setFormData((prev) => ({ ...prev, baseUrl: config.defaultBaseUrl }));
     } else if (isOpen) {
@@ -59,7 +63,7 @@ function AddCompatibleModal({ variant, isOpen, onClose, onCreated }) {
       setCheckKey("");
       setCheckModelId("");
     }
-  }, [config.hasApiType ? formData.apiType : isOpen]);
+  }
 
   const handleSubmit = async () => {
     if (!formData.name.trim() || !formData.prefix.trim() || !formData.baseUrl.trim()) return;
@@ -219,3 +223,4 @@ AddCompatibleModal.propTypes = {
 };
 
 export default AddCompatibleModal;
+

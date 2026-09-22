@@ -2,14 +2,14 @@
 
 export default function Footer() {
   return (
-    <footer className="border-t border-[#3a2f27] bg-[#120f0d] pt-16 pb-8 px-6">
+    <footer className="border-t border-landing-border bg-landing-surface-2 pt-16 pb-8 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-16">
           {/* Brand */}
           <div className="col-span-2 lg:col-span-2">
             <div className="flex items-center gap-3 mb-6">
-              <div className="size-6 rounded bg-[#f97815] flex items-center justify-center text-white">
-                <span className="material-symbols-outlined text-[16px]">hub</span>
+              <div className="size-6 rounded bg-landing-orange flex items-center justify-center text-white">
+                <span className="material-symbols-outlined text-4">hub</span>
               </div>
               <h3 className="text-white text-lg font-bold">9Router</h3>
             </div>
@@ -47,7 +47,7 @@ export default function Footer() {
         </div>
         
         {/* Bottom */}
-        <div className="border-t border-[#3a2f27] pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="border-t border-landing-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-gray-600 text-sm">© 2025 9Router. All rights reserved.</p>
           <div className="flex gap-6">
             <a className="text-gray-600 hover:text-white text-sm transition-colors" href="https://github.com/decolua/9router" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -58,4 +58,5 @@ export default function Footer() {
     </footer>
   );
 }
+
 

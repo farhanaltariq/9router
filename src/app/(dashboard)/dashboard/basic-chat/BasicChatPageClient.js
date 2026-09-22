@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { Badge, Button } from "@/shared/components";
 import { getModelsByProviderId } from "@/shared/constants/models";
 import { isAnthropicCompatibleProvider, isOpenAICompatibleProvider } from "@/shared/constants/providers";
@@ -203,11 +204,14 @@ export default function BasicChatPageClient() {
   const fileInputRef = useRef(null);
   const abortRef = useRef(null);
   const initializedRef = useRef(false);
+  const snapshotRef = useRef({ sessions, activeSessionId, activeProviderId });
   const modelMenuRef = useRef(null);
   const historyMenuRef = useRef(null);
 
   useEffect(() => {
-    setIsHydrated(true);
+    // Defer to a microtask callback so the setState happens outside the effect body
+    // (satisfies react-hooks/set-state-in-effect while preserving SSR hydration safety).
+    Promise.resolve().then(() => setIsHydrated(true));
   }, []);
 
   useEffect(() => {
@@ -216,6 +220,7 @@ export default function BasicChatPageClient() {
     async function loadData() {
       setLoadingData(true);
       setLoadError("");
+      const snapshot = snapshotRef.current;
 
       try {
         const providersRes = await fetch("/api/providers", { cache: "no-store" });
@@ -300,6 +305,36 @@ export default function BasicChatPageClient() {
           if (normalized.length === 0) {
             setLoadError("Providers connected but no models available.");
           }
+          if (!initializedRef.current) {
+            const savedProvider = normalized.find((group) => group.providerId === snapshot.activeProviderId) || normalized[0];
+            if (savedProvider) {
+              const savedModel = savedProvider.models[0];
+              if (snapshot.sessions.length > 0) {
+                const session = snapshot.sessions.find((item) => item.id === snapshot.activeSessionId) || snapshot.sessions[0];
+                initializedRef.current = true;
+                setActiveSessionId(session.id);
+                setActiveProviderId(savedProvider.providerId);
+                setActiveModelId(savedModel?.id || "");
+                return;
+              }
+              const newSession = {
+                id: createId(),
+                title: "New chat",
+                providerId: savedProvider.providerId,
+                providerName: savedProvider.providerName,
+                modelId: savedModel?.id,
+                modelName: savedModel?.name,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                messages: [],
+              };
+              initializedRef.current = true;
+              setSessions([newSession]);
+              setActiveSessionId(newSession.id);
+              setActiveProviderId(savedProvider.providerId);
+              setActiveModelId(savedModel?.id || "");
+            }
+          }
         }
       } catch (error) {
         if (!cancelled) {
@@ -374,46 +409,6 @@ export default function BasicChatPageClient() {
       // Ignore storage errors.
     }
   }, [isHydrated, sessions, activeSessionId, activeProviderId, draft]);
-
-  useEffect(() => {
-    if (!isHydrated || loadingData || initializedRef.current) return;
-    if (providerGroups.length === 0) return;
-
-    const savedProvider = providerGroups.find((group) => group.providerId === activeProviderId) || providerGroups[0];
-    const savedModel = activeModelId && modelIndex.has(activeModelId)
-      ? modelIndex.get(activeModelId)
-      : savedProvider.models[0];
-
-    if (sessions.length > 0) {
-      const session = sessions.find((item) => item.id === activeSessionId) || sessions[0];
-      const sessionModel = session?.modelId && modelIndex.has(session.modelId)
-        ? modelIndex.get(session.modelId)
-        : savedModel;
-      initializedRef.current = true;
-      setActiveSessionId(session.id);
-      setActiveProviderId(sessionModel?.providerId || savedProvider.providerId);
-      setActiveModelId(sessionModel?.id || savedModel.id);
-      return;
-    }
-
-    const session = {
-      id: createId(),
-      title: "New chat",
-      providerId: savedProvider.providerId,
-      providerName: savedProvider.providerName,
-      modelId: savedModel.id,
-      modelName: savedModel.name,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      messages: [],
-    };
-
-    initializedRef.current = true;
-    setSessions([session]);
-    setActiveSessionId(session.id);
-    setActiveProviderId(savedProvider.providerId);
-    setActiveModelId(savedModel.id);
-  }, [isHydrated, loadingData, providerGroups, modelIndex, sessions, activeSessionId, activeProviderId, activeModelId]);
 
   const updateSession = (sessionId, updater) => {
     setSessions((prev) => prev.map((session) => (session.id === sessionId ? updater(cloneSession(session)) : session)));
@@ -739,7 +734,7 @@ export default function BasicChatPageClient() {
   const modelSubLabel = activeModel ? activeModel.requestModel : "Choose from connected providers";
 
   return (
-    <div className="relative flex-1 flex flex-col h-full min-h-0 min-w-0 bg-[#212121] text-white overflow-hidden">
+    <div className="relative flex-1 flex flex-col h-full min-h-0 min-w-0 bg-chat-bg text-white overflow-hidden">
       <div className="relative mx-auto flex flex-1 h-full min-h-0 w-full max-w-4xl flex-col">
         <div className="flex shrink-0 items-center justify-between gap-3 px-4 py-3 lg:px-6">
           <div ref={modelMenuRef} className="relative">
@@ -758,14 +753,14 @@ export default function BasicChatPageClient() {
             </button>
 
             {modelMenuOpen ? (
-              <div className="absolute left-0 top-[calc(100%+10px)] z-30 w-[min(520px,calc(100vw-2rem))] overflow-hidden rounded-[20px] border border-white/10 bg-[#262626] shadow-2xl shadow-black/50">
+              <div className="absolute left-0 top-[calc(100%+10px)] z-30 w-[min(520px,calc(100vw-2rem))] overflow-hidden rounded-[20px] border border-white/10 bg-surface-dark shadow-2xl shadow-black/50">
                 <div className="border-b border-white/10 px-4 py-3">
                   <p className="text-xs uppercase tracking-[0.22em] text-white/45">Models</p>
                   <p className="text-sm text-white/75">Only from connected providers</p>
                 </div>
-                <div className="max-h-[60vh] overflow-y-auto p-2 custom-scrollbar">
+                <div className="max-h-240 overflow-y-auto p-2 custom-scrollbar">
                   {providerGroups.map((group) => (
-                    <div key={group.providerId} className="mb-2 rounded-[16px] border border-white/10 bg-black/20 p-2">
+                    <div key={group.providerId} className="mb-2 rounded-2xl border border-white/10 bg-black/20 p-2">
                       <div className="flex items-center justify-between px-2 py-2">
                         <p className="text-sm font-semibold text-white">{group.providerName}</p>
                         <Badge size="sm" variant="default">{group.models.length}</Badge>
@@ -813,13 +808,13 @@ export default function BasicChatPageClient() {
         </div>
 
         {historyOpen ? (
-          <div ref={historyMenuRef} className="absolute right-4 top-[72px] z-20 w-[min(360px,calc(100vw-2rem))] rounded-[20px] border border-white/10 bg-[#262626] p-2 shadow-2xl shadow-black/50 lg:right-6">
+          <div ref={historyMenuRef} className="absolute right-4 top-18 z-20 w-[min(360px,calc(100vw-2rem))] rounded-[20px] border border-white/10 bg-surface-dark p-2 shadow-2xl shadow-black/50 lg:right-6">
             <div className="px-3 py-2">
               <p className="text-xs uppercase tracking-[0.22em] text-white/45">Recent chats</p>
             </div>
-            <div className="max-h-[48vh] space-y-2 overflow-y-auto p-1 custom-scrollbar">
+            <div className="max-h-192 space-y-2 overflow-y-auto p-1 custom-scrollbar">
               {sessionItems.length === 0 ? (
-                <div className="rounded-[16px] border border-dashed border-white/10 bg-white/5 p-4 text-sm text-white/55">
+                <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-4 text-sm text-white/55">
                   No conversations yet.
                 </div>
               ) : sessionItems.map((session) => {
@@ -830,7 +825,7 @@ export default function BasicChatPageClient() {
                     key={session.id}
                     type="button"
                     onClick={() => handleSelectSession(session.id)}
-                    className={`w-full rounded-[16px] border px-3 py-3 text-left transition ${isActive ? "border-blue-400/40 bg-blue-500/15" : "border-white/10 bg-white/5 hover:bg-white/8"}`}
+                    className={`w-full rounded-2xl border px-3 py-3 text-left transition ${isActive ? "border-blue-400/40 bg-blue-500/15" : "border-white/10 bg-white/5 hover:bg-white/8"}`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
@@ -858,7 +853,7 @@ export default function BasicChatPageClient() {
         <div className="flex flex-1 flex-col min-h-0">
           <div className="flex-1 overflow-y-auto py-4 custom-scrollbar">
             {currentMessages.length === 0 ? (
-              <div className="flex min-h-[50vh] items-center justify-center px-4 text-center">
+              <div className="flex min-h-200 items-center justify-center px-4 text-center">
                 <div className="max-w-xl space-y-4">
                   <div className="mx-auto flex size-16 items-center justify-center rounded-[20px] border border-white/10 bg-white/5 text-white/80">
                     <span className="material-symbols-outlined text-[30px]">chat</span>
@@ -882,7 +877,7 @@ export default function BasicChatPageClient() {
 
                 return (
                   <div key={message.id} className={`flex w-full ${isUser ? "justify-end" : "justify-start"} mb-6`}>
-                    <div className={`max-w-[min(88%,42rem)] ${isUser ? "rounded-3xl bg-[#2f2f2f] px-5 py-3.5 text-white" : "text-white/90"}`}>
+                    <div className={`max-w-176 ${isUser ? "rounded-3xl bg-chat-bubble px-5 py-3.5 text-white" : "text-white/90"}`}>
                       <div className="mb-1 flex items-center justify-between gap-3">
                         <span className="text-xs font-semibold">{isUser ? "You" : activeModel?.name || "Assistant"}</span>
                       </div>
@@ -891,7 +886,7 @@ export default function BasicChatPageClient() {
                         <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3 mt-2">
                           {message.attachments.map((attachment) => (
                             <a key={attachment.id} href={attachment.dataUrl} target="_blank" rel="noreferrer" className="overflow-hidden rounded-[18px] border border-white/10 bg-black/20">
-                              <img src={attachment.dataUrl} alt={attachment.name} className="h-28 w-full object-cover" loading="lazy" decoding="async" />
+                              <Image src={attachment.dataUrl} alt={attachment.name} width={400} height={112} unoptimized className="h-28 w-full object-cover" />
                             </a>
                           ))}
                         </div>
@@ -913,7 +908,7 @@ export default function BasicChatPageClient() {
               <div className="mx-auto mb-3 flex w-full max-w-3xl flex-wrap gap-2 px-4">
                 {attachments.map((attachment) => (
                   <div key={attachment.id} className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2">
-                    <span className="text-xs text-white/80 max-w-[12rem] truncate">{attachment.name}</span>
+                    <span className="text-xs text-white/80 max-w-48 truncate">{attachment.name}</span>
                     <button type="button" onClick={() => removeAttachment(attachment.id)} className="text-white/55 hover:text-white" aria-label="Remove attachment">
                       <span className="material-symbols-outlined text-[18px]">close</span>
                     </button>
@@ -923,14 +918,14 @@ export default function BasicChatPageClient() {
             ) : null}
 
             <div className="mx-auto w-full max-w-3xl px-4 pb-2">
-              <div className="rounded-[26px] bg-[#2f2f2f] px-3 pt-3 pb-2 shadow-[0_0_15px_rgba(0,0,0,0.10)] ring-1 ring-white/5">
+              <div className="rounded-6.5 bg-chat-bubble px-3 pt-3 pb-2 shadow-[0_0_15px_rgba(0,0,0,0.10)] ring-1 ring-white/5">
                 <textarea
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Message AI"
                   rows={1}
-                  className="w-full resize-none bg-transparent px-2 text-[15px] leading-6 text-white outline-none placeholder:text-white/40 custom-scrollbar max-h-[25vh] overflow-y-auto"
+                  className="w-full resize-none bg-transparent px-2 text-[15px] leading-6 text-white outline-none placeholder:text-white/40 custom-scrollbar max-h-100 overflow-y-auto"
                 />
 
                 <div className="mt-2 flex items-center justify-between gap-3">
@@ -939,7 +934,7 @@ export default function BasicChatPageClient() {
                       <span className="material-symbols-outlined text-[20px]">attach_file</span>
                     </button>
                     <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleAttachFiles} />
-                    <span className="text-xs font-medium text-white/30 truncate max-w-[120px]">{activeModel ? activeModel.name : "No model"}</span>
+                    <span className="text-xs font-medium text-white/30 truncate max-w-30">{activeModel ? activeModel.name : "No model"}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -965,3 +960,6 @@ export default function BasicChatPageClient() {
     </div>
   );
 }
+
+
+

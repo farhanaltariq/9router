@@ -16,8 +16,10 @@ export default function ChangelogModal({ isOpen, onClose }) {
 
   useEffect(() => {
     if (!isOpen || html) return;
-    setLoading(true);
-    setError("");
+    Promise.resolve().then(() => {
+      setLoading(true);
+      setError("");
+    });
     fetch(GITHUB_CONFIG.changelogUrl)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -53,7 +55,7 @@ export default function ChangelogModal({ isOpen, onClose }) {
       {/* Modal content */}
       <div
         ref={modalRef}
-        className="relative w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-w-3xl flex flex-col max-h-[85vh]"
+        className="relative w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-w-3xl flex flex-col max-h-340"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b border-black/5 dark:border-white/5">
@@ -63,7 +65,7 @@ export default function ChangelogModal({ isOpen, onClose }) {
             className="p-1.5 rounded-lg text-text-muted hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
             aria-label="Close"
           >
-            <span className="material-symbols-outlined text-[20px]">close</span>
+            <span className="material-symbols-outlined text-5">close</span>
           </button>
         </div>
 
@@ -95,3 +97,4 @@ ChangelogModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
 };
+

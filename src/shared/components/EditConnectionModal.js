@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import Modal from "@/shared/components/Modal";
 import Input from "@/shared/components/Input";
@@ -29,7 +29,10 @@ export default function EditConnectionModal({ isOpen, connection, proxyPools, on
   const [validationResult, setValidationResult] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
+  // Sync form from connection — adjust state during render instead of an effect
+  const [prevConnection, setPrevConnection] = useState(connection);
+  if (connection !== prevConnection) {
+    setPrevConnection(connection);
     if (connection) {
       setFormData({
         name: connection.name || "",
@@ -57,7 +60,7 @@ export default function EditConnectionModal({ isOpen, connection, proxyPools, on
       setTestResult(null);
       setValidationResult(null);
     }
-  }, [connection]);
+  }
 
   const isOAuth = connection?.authType === "oauth";
   const isAzure = connection?.provider === "azure";
@@ -313,4 +316,5 @@ EditConnectionModal.propTypes = {
   onSave: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
 };
+
 

@@ -167,7 +167,7 @@ export default function CompatibleModelsSection({ providerStorageAlias, provider
       </p>
 
       <div className="flex items-end gap-2 flex-wrap">
-        <div className="flex-1 min-w-[240px]">
+        <div className="flex-1 min-w-60">
           <label htmlFor="new-compatible-model-input" className="text-xs text-text-muted mb-1 block">Model ID</label>
           <input
             id="new-compatible-model-input"
@@ -230,3 +230,5 @@ CompatibleModelsSection.propTypes = {
   })).isRequired,
   isAnthropic: PropTypes.bool,
 };
+
+

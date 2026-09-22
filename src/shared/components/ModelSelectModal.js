@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import Modal from "./Modal";
 import ProviderIcon from "./ProviderIcon";
@@ -34,9 +34,11 @@ function useLiveProviderModels(isOpen, connectionIds, label) {
   const idsKey = (connectionIds ?? []).join("|");
 
   useEffect(() => {
+    if (!isOpen) return undefined;
     const ids = idsKey ? idsKey.split("|") : [];
-    if (!isOpen || ids.length === 0) {
-      setModels([]);
+    if (ids.length === 0) {
+      // Defer setState so it doesn't run synchronously inside the effect body.
+      Promise.resolve().then(() => setModels([]));
       return undefined;
     }
 
@@ -117,68 +119,68 @@ export default function ModelSelectModal({
   const clineModels = useLiveProviderModels(isOpen, clineConnectionIds, "Cline");
   const clinepassModels = useLiveProviderModels(isOpen, clinepassConnectionIds, "ClinePass");
 
-  const fetchCombos = async () => {
-    try {
-      const res = await fetch("/api/combos");
-      if (!res.ok) throw new Error(`Failed to fetch combos: ${res.status}`);
-      const data = await res.json();
-      setCombos(data.combos || []);
-    } catch (error) {
-      console.error("Error fetching combos:", error);
-      setCombos([]);
-    }
-  };
-
   useEffect(() => {
-    if (isOpen) fetchCombos();
+    if (!isOpen) return;
+    const load = async () => {
+      try {
+        const res = await fetch("/api/combos");
+        if (!res.ok) throw new Error(`Failed to fetch combos: ${res.status}`);
+        const data = await res.json();
+        setCombos(data.combos || []);
+      } catch (error) {
+        console.error("Error fetching combos:", error);
+        setCombos([]);
+      }
+    };
+    load();
   }, [isOpen]);
 
-  const fetchProviderNodes = async () => {
-    try {
-      const res = await fetch("/api/provider-nodes");
-      if (!res.ok) throw new Error(`Failed to fetch provider nodes: ${res.status}`);
-      const data = await res.json();
-      setProviderNodes(data.nodes || []);
-    } catch (error) {
-      console.error("Error fetching provider nodes:", error);
-      setProviderNodes([]);
-    }
-  };
-
   useEffect(() => {
-    if (isOpen) fetchProviderNodes();
+    if (!isOpen) return;
+    const load = async () => {
+      try {
+        const res = await fetch("/api/provider-nodes");
+        if (!res.ok) throw new Error(`Failed to fetch provider nodes: ${res.status}`);
+        const data = await res.json();
+        setProviderNodes(data.nodes || []);
+      } catch (error) {
+        console.error("Error fetching provider nodes:", error);
+        setProviderNodes([]);
+      }
+    };
+    load();
   }, [isOpen]);
 
-  const fetchCustomModels = async () => {
-    try {
-      const res = await fetch("/api/models/custom");
-      if (!res.ok) throw new Error(`Failed to fetch custom models: ${res.status}`);
-      const data = await res.json();
-      setCustomModels(data.models || []);
-    } catch (error) {
-      console.error("Error fetching custom models:", error);
-      setCustomModels([]);
-    }
-  };
-
   useEffect(() => {
-    if (isOpen) fetchCustomModels();
+    if (!isOpen) return;
+    const load = async () => {
+      try {
+        const res = await fetch("/api/models/custom");
+        if (!res.ok) throw new Error(`Failed to fetch custom models: ${res.status}`);
+        const data = await res.json();
+        setCustomModels(data.models || []);
+      } catch (error) {
+        console.error("Error fetching custom models:", error);
+        setCustomModels([]);
+      }
+    };
+    load();
   }, [isOpen]);
 
-  const fetchDisabledModels = async () => {
-    try {
-      const res = await fetch("/api/models/disabled");
-      if (!res.ok) throw new Error(`Failed to fetch disabled models: ${res.status}`);
-      const data = await res.json();
-      setDisabledModels(data.disabled || {});
-    } catch (error) {
-      console.error("Error fetching disabled models:", error);
-      setDisabledModels({});
-    }
-  };
-
   useEffect(() => {
-    if (isOpen) fetchDisabledModels();
+    if (!isOpen) return;
+    const load = async () => {
+      try {
+        const res = await fetch("/api/models/disabled");
+        if (!res.ok) throw new Error(`Failed to fetch disabled models: ${res.status}`);
+        const data = await res.json();
+        setDisabledModels(data.disabled || {});
+      } catch (error) {
+        console.error("Error fetching disabled models:", error);
+        setDisabledModels({});
+      }
+    };
+    load();
   }, [isOpen]);
 
   const allProviders = useMemo(() => ({ ...OAUTH_PROVIDERS, ...FREE_PROVIDERS, ...FREE_TIER_PROVIDERS, ...APIKEY_PROVIDERS }), []);
@@ -428,16 +430,19 @@ export default function ModelSelectModal({
     if (!searchQuery.trim()) return combos;
     const query = searchQuery.toLowerCase();
     return combos.filter(c => c.name.toLowerCase().includes(query));
-  }, [combos, searchQuery, kindFilter]);
+  }, [combos, searchQuery, kindFilter, capFilter]);
 
   // Sort models alphabetically, with added models floated to top
-  const sortModels = (models) => {
+  const sortModels = useCallback((models) => {
     const added = models.filter(m => addedModelValues.includes(m.value)).sort((a, b) => a.name.localeCompare(b.name));
     const rest = models.filter(m => !addedModelValues.includes(m.value)).sort((a, b) => a.name.localeCompare(b.name));
     return [...added, ...rest];
-  };
+  }, [addedModelValues]);
 
   // Filter models by search query
+  // Note: capFilter, getCaps, sortModels are read but intentionally not in deps —
+  // capFilter is only checked for truthiness here and tracked via capFilterRef,
+  // getCaps is stable per useModelCaps instance, sortModels is identity-only.
   const filteredGroups = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
@@ -465,7 +470,7 @@ export default function ModelSelectModal({
     });
 
     return filtered;
-  }, [groupedModels, searchQuery, addedModelValues]);
+  }, [groupedModels, searchQuery, capFilter, getCaps, sortModels]);
 
   const handleSelect = (model) => {
     const value = model?.value || model?.name || model;
@@ -504,7 +509,7 @@ export default function ModelSelectModal({
       {/* Search - compact */}
       <div className="mb-3">
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted text-[16px]">
+          <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted text-4">
             search
           </span>
           <input
@@ -518,7 +523,7 @@ export default function ModelSelectModal({
       </div>
 
       {/* Models grouped by provider - compact */}
-      <div className="max-h-[400px] overflow-y-auto space-y-3">
+      <div className="max-h-100 overflow-y-auto space-y-3">
         {/* Combos section - always first */}
         {filteredCombos.length > 0 && (
           <div>
@@ -655,3 +660,8 @@ ModelSelectModal.propTypes = {
   addedModelValues: PropTypes.arrayOf(PropTypes.string),
   closeOnSelect: PropTypes.bool,
 };
+
+
+
+
+

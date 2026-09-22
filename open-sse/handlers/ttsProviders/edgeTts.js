@@ -62,8 +62,7 @@ export async function fetchEdgeTtsVoices() {
   _voicesCacheTime = now;
   return voices;
 }
-
-export default {
+const __default = {
   noAuth: true,
   async synthesize(text, model) {
     const voiceId = model || "vi-VN-HoaiMyNeural";
@@ -87,3 +86,7 @@ export default {
     return { base64: Buffer.from(buf).toString("base64"), format: "mp3" };
   },
 };
+
+export default __default;
+;
+

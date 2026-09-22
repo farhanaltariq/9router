@@ -2,8 +2,7 @@
 import createOpenAIEmbeddingAdapter from "./openai.js";
 
 const baseAdapter = createOpenAIEmbeddingAdapter("openai");
-
-export default {
+const __default = {
   ...baseAdapter,
   buildUrl: (_model, creds) => {
     const rawBaseUrl = creds?.providerSpecificData?.baseUrl || "https://api.openai.com/v1";
@@ -11,3 +10,7 @@ export default {
     return `${baseUrl}/embeddings`;
   },
 };
+
+export default __default;
+;
+

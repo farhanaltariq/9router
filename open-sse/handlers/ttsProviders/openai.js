@@ -3,8 +3,7 @@ import { Buffer } from "node:buffer";
 import { PROVIDER_MEDIA } from "../../providers/index.js";
 
 const DEFAULT_TTS_MODEL = PROVIDER_MEDIA["openai"]?.ttsConfig?.defaultModel;
-
-export default {
+const __default = {
   async synthesize(text, model, credentials) {
     if (!credentials?.apiKey) throw new Error("No OpenAI API key configured");
 
@@ -31,3 +30,7 @@ export default {
     return { base64: Buffer.from(buf).toString("base64"), format: "mp3" };
   },
 };
+
+export default __default;
+;
+

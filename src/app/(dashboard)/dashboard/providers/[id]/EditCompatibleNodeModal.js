@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { Button, Badge, Input, Modal, Select } from "@/shared/components";
 
@@ -17,7 +17,12 @@ export default function EditCompatibleNodeModal({ isOpen, node, onSave, onClose,
   const [validating, setValidating] = useState(false);
   const [validationResult, setValidationResult] = useState(null);
 
-  useEffect(() => {
+  // Sync form from node — adjust state during render instead of an effect
+  const [prevNode, setPrevNode] = useState(node);
+  const [prevIsAnthropic, setPrevIsAnthropic] = useState(isAnthropic);
+  if (node !== prevNode || isAnthropic !== prevIsAnthropic) {
+    setPrevNode(node);
+    setPrevIsAnthropic(isAnthropic);
     if (node) {
       setFormData({
         name: node.name || "",
@@ -26,7 +31,7 @@ export default function EditCompatibleNodeModal({ isOpen, node, onSave, onClose,
         baseUrl: node.baseUrl || (isAnthropic ? "https://api.anthropic.com/v1" : "https://api.openai.com/v1"),
       });
     }
-  }, [node, isAnthropic]);
+  }
 
   const apiTypeOptions = [
     { value: "chat", label: "Chat Completions" },
@@ -159,3 +164,4 @@ EditCompatibleNodeModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   isAnthropic: PropTypes.bool,
 };
+

@@ -3,8 +3,7 @@ import { nowSec } from "./_base.js";
 import { PROVIDER_MEDIA } from "../../providers/index.js";
 
 const BASE_URL = PROVIDER_MEDIA["huggingface"]?.imageConfig?.baseUrl;
-
-export default {
+const __default = {
   buildUrl: (model) => `${BASE_URL}/${model}`,
   buildHeaders: (creds) => {
     const headers = { "Content-Type": "application/json" };
@@ -21,3 +20,7 @@ export default {
   },
   normalize: (responseBody) => responseBody,
 };
+
+export default __default;
+;
+

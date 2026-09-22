@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { Button, Modal, Toggle } from "@/shared/components";
 import { CAPACITY_META } from "@/shared/constants/models";
@@ -14,10 +14,12 @@ export default function AddCustomModelModal({ isOpen, providerAlias, providerDis
   const [testError, setTestError] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // Reset state when modal opens
-  useEffect(() => {
+  // Reset state when modal opens — adjust state during render instead of an effect
+  const [prevOpen, setPrevOpen] = useState(isOpen);
+  if (isOpen !== prevOpen) {
+    setPrevOpen(isOpen);
     if (isOpen) { setModelId(""); setCaps(defaultCaps()); setTestStatus(null); setTestError(""); }
-  }, [isOpen]);
+  }
 
   // Strip provider's own alias prefix (e.g. "cc/model" -> "model" for cc provider)
   const stripAlias = (id) => {
@@ -143,3 +145,4 @@ AddCustomModelModal.propTypes = {
   onSave: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
 };
+

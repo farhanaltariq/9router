@@ -17,8 +17,7 @@ function resolveImageInput(input) {
   }
   return null;
 }
-
-export default {
+const __default = {
   // Delegate to executor instead of building URL/headers/body manually
   useExecutor: true,
 
@@ -84,3 +83,6 @@ export default {
     };
   },
 };
+
+export default __default;
+;

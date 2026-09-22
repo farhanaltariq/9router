@@ -183,7 +183,7 @@ export default function ProviderLimits() {
         return [];
       }
     },
-    [accountFilter, expiringFirst, page, pageSize, providerFilter],
+    [accountFilter, page, pageSize, providerFilter],
   );
 
   // Fetch quota for a specific connection
@@ -754,7 +754,7 @@ export default function ProviderLimits() {
     return (
       <Card padding="lg">
         <div className="text-center py-12">
-          <span className="material-symbols-outlined text-[64px] text-text-muted opacity-20">
+          <span className="material-symbols-outlined text-16 text-text-muted opacity-20">
             cloud_off
           </span>
           <h3 className="mt-4 text-lg font-semibold text-text-primary">
@@ -773,7 +773,7 @@ export default function ProviderLimits() {
     return (
       <Card padding="lg">
         <div className="text-center py-12">
-          <span className="material-symbols-outlined text-[64px] text-text-muted opacity-20">
+          <span className="material-symbols-outlined text-16 text-text-muted opacity-20">
             {emptyState.icon}
           </span>
           <h3 className="mt-4 text-lg font-semibold text-text-primary">
@@ -849,7 +849,7 @@ export default function ProviderLimits() {
                     </span>
                     <span className="font-medium">All providers</span>
                     {providerFilter === "all" && (
-                      <span className="material-symbols-outlined ml-auto text-[20px]">
+                      <span className="material-symbols-outlined ml-auto text-5">
                         check
                       </span>
                     )}
@@ -880,7 +880,7 @@ export default function ProviderLimits() {
                           {provider}
                         </span>
                         {providerFilter === provider && (
-                          <span className="material-symbols-outlined ml-auto text-[20px]">
+                          <span className="material-symbols-outlined ml-auto text-5">
                             check
                           </span>
                         )}
@@ -1085,7 +1085,7 @@ export default function ProviderLimits() {
                                 ? `Use one Codex reset credit. ${resetCreditCount} available.`
                                 : "No Codex reset credits available"
                             }
-                            className={`flex h-8 min-w-10 items-center justify-center gap-1 rounded-lg border px-2 text-[11px] font-medium tabular-nums transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60 disabled:cursor-not-allowed disabled:opacity-60 ${
+                            className={`flex h-8 min-w-10 items-center justify-center gap-1 rounded-lg border px-2 text-[11px] font-medium tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary/60 disabled:cursor-not-allowed disabled:opacity-60 ${
                               resetCreditCount > 0
                                 ? "border-primary/30 bg-primary/5 text-primary hover:bg-primary/10"
                                 : "border-black/10 bg-black/2 text-text-muted dark:border-white/10 dark:bg-white/3"
@@ -1192,13 +1192,13 @@ export default function ProviderLimits() {
               <div className="px-2 py-1.5">
                 {isLoading ? (
                   <div className="text-center py-5 text-text-muted">
-                    <span className="material-symbols-outlined text-[28px] animate-spin">
+                    <span className="material-symbols-outlined text-7 animate-spin">
                       progress_activity
                     </span>
                   </div>
                 ) : error ? (
                   <div className="text-center py-5">
-                    <span className="material-symbols-outlined text-[28px] text-red-500">
+                    <span className="material-symbols-outlined text-7 text-red-500">
                       error
                     </span>
                     <p className="mt-1.5 text-xs text-text-muted">{error}</p>
@@ -1334,7 +1334,7 @@ export default function ProviderLimits() {
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-text-primary transition-colors hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:hover:bg-white/5"
                 aria-label="Previous accounts page"
               >
-                <span className="material-symbols-outlined text-[16px]">
+                <span className="material-symbols-outlined text-4">
                   chevron_left
                 </span>
               </button>
@@ -1353,7 +1353,7 @@ export default function ProviderLimits() {
                 className="flex h-8 w-8 items-center justify-center rounded-lg border border-black/10 text-text-primary transition-colors hover:bg-black/5 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:hover:bg-white/5"
                 aria-label="Next accounts page"
               >
-                <span className="material-symbols-outlined text-[16px]">
+                <span className="material-symbols-outlined text-4">
                   chevron_right
                 </span>
               </button>
@@ -1412,10 +1412,10 @@ export default function ProviderLimits() {
               </button>
             </div>
 
-            <div className="max-h-[70vh] overflow-auto bg-white p-4 dark:bg-neutral-950">
+            <div className="max-h-280 overflow-auto bg-white p-4 dark:bg-neutral-950">
               {resetCreditsState.loading ? (
                 <div className="flex items-center justify-center gap-2 py-10 text-sm text-text-muted">
-                  <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                  <span className="material-symbols-outlined animate-spin text-5">progress_activity</span>
                   Loading reset credits...
                 </div>
               ) : resetCreditsState.error ? (
@@ -1478,3 +1478,6 @@ export default function ProviderLimits() {
     </div>
   );
 }
+
+
+

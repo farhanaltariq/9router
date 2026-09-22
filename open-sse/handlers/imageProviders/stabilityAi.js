@@ -10,8 +10,7 @@ function modelToEndpoint(model) {
   if (model.includes("sd3")) return "sd3";
   return "core";
 }
-
-export default {
+const __default = {
   buildUrl: (model) => `${BASE_URL}/${modelToEndpoint(model)}`,
   buildHeaders: (creds) => {
     const key = creds?.apiKey || creds?.accessToken;
@@ -33,3 +32,7 @@ export default {
     return { created: nowSec(), data: [] };
   },
 };
+
+export default __default;
+;
+

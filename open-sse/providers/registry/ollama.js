@@ -1,4 +1,5 @@
-export default {
+
+const __default = {
   id: "ollama",
   priority: 30,
   hasFree: true,
@@ -46,3 +47,7 @@ export default {
     usageApikey: true,
   },
 };
+
+export default __default;
+;
+

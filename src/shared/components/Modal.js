@@ -56,7 +56,7 @@ export default function Modal({
         className={cn(
           "relative w-full bg-surface",
           "border border-border-subtle",
-          "rounded-[14px] shadow-[var(--shadow-elev)]",
+          "rounded-3.5 shadow-[var(--shadow-elev)]",
           "fade-in",
           sizes[size],
           className
@@ -91,9 +91,9 @@ export default function Modal({
             <button
               onClick={onClose}
               aria-label="Close"
-              className="md:hidden p-1.5 rounded-[10px] text-text-muted hover:bg-surface-2 hover:text-text-main transition-colors"
+              className="md:hidden p-1.5 rounded-2.5 text-text-muted hover:bg-surface-2 hover:text-text-main transition-colors"
             >
-              <span className="material-symbols-outlined text-[20px]">close</span>
+              <span className="material-symbols-outlined text-5">close</span>
             </button>
           </div>
         )}
@@ -144,3 +144,5 @@ export function ConfirmModal({
     </Modal>
   );
 }
+
+

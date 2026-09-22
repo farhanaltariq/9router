@@ -58,6 +58,8 @@ export default function ProviderDetailPage() {
   const [testingModelIds, setTestingModelIds] = useState(() => new Set());
   const [showAddCustomModel, setShowAddCustomModel] = useState(false);
   const [selectedConnectionIds, setSelectedConnectionIds] = useState([]);
+  // Drop ids whose connection no longer exists — derived each render.
+  const liveSelectedIds = selectedConnectionIds.filter((id) => connections.some((c) => c.id === id));
   const [bulkProxyPoolId, setBulkProxyPoolId] = useState("__none__");
   const [bulkUpdatingProxy, setBulkUpdatingProxy] = useState(false);
   const [providerStrategy, setProviderStrategy] = useState(null);
@@ -179,14 +181,17 @@ export default function ProviderDetailPage() {
     ? (providerNode?.prefix || providerId)
     : providerAlias;
 
-  const fetchDisabledModels = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/models/disabled?providerAlias=${encodeURIComponent(providerStorageAlias)}`, { cache: "no-store" });
-      const data = await res.json();
-      if (res.ok) setDisabledModelIds(data.ids || []);
-    } catch (error) {
-      console.log("Error fetching disabled models:", error);
-    }
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch(`/api/models/disabled?providerAlias=${encodeURIComponent(providerStorageAlias)}`, { cache: "no-store" });
+        const data = await res.json();
+        if (res.ok) setDisabledModelIds(data.ids || []);
+      } catch (error) {
+        console.log("Error fetching disabled models:", error);
+      }
+    };
+    load();
   }, [providerStorageAlias]);
 
   const handleDisableModel = async (modelId) => {
@@ -196,7 +201,7 @@ export default function ProviderDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ providerAlias: providerStorageAlias, ids: [modelId] }),
       });
-      if (res.ok) await fetchDisabledModels();
+      if (res.ok) await refreshDisabledModels();
     } catch (error) {
       console.log("Error disabling model:", error);
     }
@@ -205,7 +210,7 @@ export default function ProviderDetailPage() {
   const handleEnableModel = async (modelId) => {
     try {
       const res = await fetch(`/api/models/disabled?providerAlias=${encodeURIComponent(providerStorageAlias)}&id=${encodeURIComponent(modelId)}`, { method: "DELETE" });
-      if (res.ok) await fetchDisabledModels();
+      if (res.ok) await refreshDisabledModels();
     } catch (error) {
       console.log("Error enabling model:", error);
     }
@@ -224,7 +229,7 @@ export default function ProviderDetailPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ providerAlias: providerStorageAlias, ids }),
           });
-          if (res.ok) await fetchDisabledModels();
+          if (res.ok) await refreshDisabledModels();
         } catch (error) {
           console.log("Error disabling all models:", error);
         }
@@ -235,14 +240,13 @@ export default function ProviderDetailPage() {
   const handleEnableAll = async () => {
     try {
       const res = await fetch(`/api/models/disabled?providerAlias=${encodeURIComponent(providerStorageAlias)}`, { method: "DELETE" });
-      if (res.ok) await fetchDisabledModels();
+      if (res.ok) await refreshDisabledModels();
     } catch (error) {
       console.log("Error enabling all models:", error);
     }
   };
 
-  // Define callbacks BEFORE the useEffect that uses them
-  const fetchAliases = useCallback(async () => {
+  const fetchAliases = async () => {
     try {
       const res = await fetch("/api/models/alias");
       const data = await res.json();
@@ -252,9 +256,9 @@ export default function ProviderDetailPage() {
     } catch (error) {
       console.log("Error fetching aliases:", error);
     }
-  }, []);
+  };
 
-  const fetchCustomModels = useCallback(async () => {
+  const fetchCustomModels = async () => {
     try {
       const res = await fetch("/api/models/custom", { cache: "no-store" });
       const data = await res.json();
@@ -264,7 +268,7 @@ export default function ProviderDetailPage() {
     } catch (error) {
       console.log("Error fetching custom models:", error);
     }
-  }, []);
+  };
 
   const fetchConnections = useCallback(async () => {
     try {
@@ -319,6 +323,11 @@ export default function ProviderDetailPage() {
       setLoading(false);
     }
   }, [providerId, isCompatible]);
+
+  // ponytail: shared refresh (no auto-provision retry logic) for effect + bulk handler
+  const refreshConnections = async () => {
+    await fetchConnections();
+  };
 
   const handleUpdateNode = async (formData) => {
     try {
@@ -428,26 +437,97 @@ export default function ProviderDetailPage() {
   };
 
   useEffect(() => {
-    fetchConnections();
-    fetchAliases();
-    fetchCustomModels();
-    fetchDisabledModels();
-  }, [fetchConnections, fetchAliases, fetchCustomModels, fetchDisabledModels]);
+    const load = async () => {
+      await Promise.all([
+        (async () => {
+          try {
+            const [connectionsRes, nodesRes, proxyPoolsRes, settingsRes] = await Promise.all([
+              fetch("/api/providers", { cache: "no-store" }),
+              fetch("/api/provider-nodes", { cache: "no-store" }),
+              fetch("/api/proxy-pools?isActive=true", { cache: "no-store" }),
+              fetch("/api/settings", { cache: "no-store" }),
+            ]);
+            const connectionsData = await connectionsRes.json();
+            const nodesData = await nodesRes.json();
+            const proxyPoolsData = await proxyPoolsRes.json();
+            const settingsData = settingsRes.ok ? await settingsRes.json() : {};
+            if (connectionsRes.ok) {
+              const filtered = (connectionsData.connections || []).filter(c => c.provider === providerId);
+              setConnections(filtered);
+            }
+            if (proxyPoolsRes.ok) {
+              setProxyPools(proxyPoolsData.proxyPools || []);
+            }
+            // Load per-provider strategy override
+            const override = (settingsData.providerStrategies || {})[providerId] || {};
+            setProviderStrategy(override.fallbackStrategy || null);
+            setProviderStickyLimit(override.stickyRoundRobinLimit != null ? String(override.stickyRoundRobinLimit) : "1");
+            // Load per-provider thinking config
+            const thinkingCfg = (settingsData.providerThinking || {})[providerId] || {};
+            setThinkingMode(thinkingCfg.mode || "auto");
+            const autoPingSettingsKey = AUTO_PING_SETTINGS_KEYS[providerId];
+            const apCfg = autoPingSettingsKey ? settingsData[autoPingSettingsKey] || {} : {};
+            setAutoPing({ enabled: apCfg.enabled === true, connections: apCfg.connections || {} });
+            if (nodesRes.ok) {
+              let node = (nodesData.nodes || []).find((entry) => entry.id === providerId) || null;
+              // Newly created compatible nodes can be briefly unavailable on one worker.
+              // Retry a few times before showing "Provider not found".
+              if (!node && isCompatible) {
+                for (let attempt = 0; attempt < 3; attempt += 1) {
+                  await new Promise((resolve) => setTimeout(resolve, 150));
+                  const retryRes = await fetch("/api/provider-nodes", { cache: "no-store" });
+                  if (!retryRes.ok) continue;
+                  const retryData = await retryRes.json();
+                  node = (retryData.nodes || []).find((entry) => entry.id === providerId) || null;
+                  if (node) break;
+                }
+              }
+              setProviderNode(node);
+            }
+          } catch (error) {
+            console.log("Error fetching connections:", error);
+          } finally {
+            setLoading(false);
+          }
+        })(),
+        (async () => {
+          try {
+            const res = await fetch("/api/models/alias");
+            const data = await res.json();
+            if (res.ok) setModelAliases(data.aliases || {});
+          } catch (error) {
+            console.log("Error fetching aliases:", error);
+          }
+        })(),
+        (async () => {
+          try {
+            const res = await fetch("/api/models/custom", { cache: "no-store" });
+            const data = await res.json();
+            if (res.ok) setCustomModels(data.models || []);
+          } catch (error) {
+            console.log("Error fetching custom models:", error);
+          }
+        })(),
+        (async () => {
+          try {
+            const res = await fetch(`/api/models/disabled?providerAlias=${encodeURIComponent(providerStorageAlias)}`, { cache: "no-store" });
+            const data = await res.json();
+            if (res.ok) setDisabledModelIds(data.ids || []);
+          } catch (error) {
+            console.log("Error fetching disabled models:", error);
+          }
+        })(),
+      ]);
+    };
+    load();
+  }, [providerId, isCompatible, providerStorageAlias]);
 
   // Cursor's model availability is account-specific and changes frequently.
   // Load the active account's live catalog for the dashboard; the static
   // registry remains the fallback while the request is pending or unavailable.
   useEffect(() => {
-    if (providerId !== "cursor") {
-      setLiveModels([]);
-      return;
-    }
-
     const connection = connections.find((item) => item.isActive !== false);
-    if (!connection?.id) {
-      setLiveModels([]);
-      return;
-    }
+    if (providerId !== "cursor" || !connection?.id) return;
 
     let cancelled = false;
     fetch(`/api/providers/${connection.id}/models`, { cache: "no-store" })
@@ -644,7 +724,7 @@ export default function ProviderDetailPage() {
   };
 
   const handleBulkDelete = () => {
-    const count = selectedConnectionIds.length;
+    const count = liveSelectedIds.length;
     if (count === 0) return;
     setConfirmState({
       title: `Delete ${count} Connection${count > 1 ? "s" : ""}`,
@@ -652,7 +732,7 @@ export default function ProviderDetailPage() {
       onConfirm: async () => {
         setConfirmState(null);
         let failed = 0;
-        const idsToDelete = [...selectedConnectionIds];
+        const idsToDelete = [...liveSelectedIds];
         for (const id of idsToDelete) {
           try {
             const res = await fetch(`/api/providers/${id}`, { method: "DELETE" });
@@ -759,8 +839,8 @@ export default function ProviderDetailPage() {
     }
   };
 
-  const selectedConnections = connections.filter((conn) => selectedConnectionIds.includes(conn.id));
-  const allSelected = connections.length > 0 && selectedConnectionIds.length === connections.length;
+  const selectedConnections = connections.filter((conn) => liveSelectedIds.includes(conn.id));
+  const allSelected = connections.length > 0 && liveSelectedIds.length === connections.length;
 
   const toggleSelectConnection = (connectionId) => {
     setSelectedConnectionIds((prev) => (
@@ -783,9 +863,7 @@ export default function ProviderDetailPage() {
     setBulkProxyPoolId("__none__");
   };
 
-  useEffect(() => {
-    setSelectedConnectionIds((prev) => prev.filter((id) => connections.some((conn) => conn.id === id)));
-  }, [connections]);
+
 
   const selectedProxySummary = (() => {
     if (selectedConnections.length === 0) return "";
@@ -858,7 +936,7 @@ export default function ProviderDetailPage() {
   const isSelected = (connectionId) => selectedConnectionIds.includes(connectionId);
 
   const connectionsList = (
-    <div className="flex min-w-0 flex-col divide-y divide-black/[0.03] dark:divide-white/[0.03] max-h-[500px] overflow-y-auto pr-1">
+    <div className="flex min-w-0 flex-col divide-y divide-black/3 dark:divide-white/3 max-h-125 overflow-y-auto pr-1">
       {connections
         .map((conn, index) => (
           <div key={conn.id} className="flex min-w-0 items-stretch">
@@ -1236,14 +1314,14 @@ export default function ProviderDetailPage() {
 
       {providerInfo.deprecated && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
-          <span className="material-symbols-outlined text-[16px] text-yellow-500 mt-0.5 shrink-0">warning</span>
+          <span className="material-symbols-outlined text-4 text-yellow-500 mt-0.5 shrink-0">warning</span>
           <p className="text-xs text-red-600 dark:text-yellow-400 leading-relaxed">{providerInfo.deprecationNotice}</p>
         </div>
       )}
 
       {providerInfo.notice?.text && !providerInfo.deprecated && (
         <div className="flex flex-col gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 sm:flex-row sm:items-center">
-          <span className="material-symbols-outlined text-[16px] text-blue-500 shrink-0">info</span>
+          <span className="material-symbols-outlined text-4 text-blue-500 shrink-0">info</span>
           <p className="min-w-0 flex-1 text-xs leading-relaxed text-blue-600 dark:text-blue-400">{providerInfo.notice.text}</p>
           {providerInfo.notice.apiKeyUrl && (
             <a
@@ -1457,7 +1535,7 @@ export default function ProviderDetailPage() {
                 </div>
               )}
               {connections.length > 0 && (
-                <div className="mb-3 flex items-center gap-2 border-b border-black/[0.03] pb-2 dark:border-white/[0.03]">
+                <div className="mb-3 flex items-center gap-2 border-b border-black/3 pb-2 dark:border-white/3">
                   <label className="flex cursor-pointer items-center gap-1.5 text-xs text-text-muted hover:text-primary">
                     <input
                       type="checkbox"
@@ -1658,3 +1736,6 @@ export default function ProviderDetailPage() {
     </div>
   );
 }
+
+
+

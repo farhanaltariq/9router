@@ -60,7 +60,7 @@ export default function DashboardLayout({ children }) {
                     className="text-current/70 hover:text-current"
                     aria-label="Dismiss notification"
                   >
-                    <span className="material-symbols-outlined text-[16px]">close</span>
+                    <span className="material-symbols-outlined text-4">close</span>
                   </button>
                 ) : null}
               </div>
@@ -102,3 +102,5 @@ export default function DashboardLayout({ children }) {
     </div>
   );
 }
+
+

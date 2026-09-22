@@ -70,11 +70,10 @@ export default function ProfilePage() {
   const [proxyLoading, setProxyLoading] = useState(false);
   const [proxyTestLoading, setProxyTestLoading] = useState(false);
 
-  const [isRemoteHost, setIsRemoteHost] = useState(false);
-  useEffect(() => {
-    if (typeof window !== "undefined")
-      setIsRemoteHost(!["localhost", "127.0.0.1", "::1"].includes(window.location.hostname));
-  }, []);
+  const [isRemoteHost] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return !["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+  });
 
   useEffect(() => {
     fetch("/api/settings")
@@ -834,7 +833,7 @@ export default function ProfilePage() {
         <Card>
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
-              <span className="material-symbols-outlined text-[20px]">shield</span>
+              <span className="material-symbols-outlined text-5">shield</span>
             </div>
             <h3 className="text-base sm:text-lg font-semibold">Security</h3>
           </div>
@@ -920,7 +919,7 @@ export default function ProfilePage() {
             className="w-full flex items-center gap-3 text-left"
           >
             <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-500 shrink-0">
-              <span className="material-symbols-outlined text-[20px]">lock_open</span>
+              <span className="material-symbols-outlined text-5">lock_open</span>
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-base sm:text-lg font-semibold">Single Sign-On (SSO)</h3>
@@ -1267,7 +1266,7 @@ export default function ProfilePage() {
                         download="9router-sp-metadata.xml"
                         className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
                       >
-                        <span className="material-symbols-outlined text-[16px]">download</span>
+                        <span className="material-symbols-outlined text-4">download</span>
                         Download XML
                       </a>
                     </div>
@@ -1410,7 +1409,7 @@ export default function ProfilePage() {
         <Card>
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500 shrink-0">
-              <span className="material-symbols-outlined text-[20px]">route</span>
+              <span className="material-symbols-outlined text-5">route</span>
             </div>
             <h3 className="text-base sm:text-lg font-semibold">Routing Strategy</h3>
           </div>
@@ -1501,7 +1500,7 @@ export default function ProfilePage() {
         <Card>
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-purple-500/10 text-purple-500 shrink-0">
-              <span className="material-symbols-outlined text-[20px]">wifi</span>
+              <span className="material-symbols-outlined text-5">wifi</span>
             </div>
             <h3 className="text-base sm:text-lg font-semibold">Network</h3>
           </div>
@@ -1573,7 +1572,7 @@ export default function ProfilePage() {
         <Card>
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500 shrink-0">
-              <span className="material-symbols-outlined text-[20px]">monitoring</span>
+              <span className="material-symbols-outlined text-5">monitoring</span>
             </div>
             <h3 className="text-base sm:text-lg font-semibold">Observability</h3>
           </div>
@@ -1663,3 +1662,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+

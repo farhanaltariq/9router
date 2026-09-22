@@ -109,7 +109,7 @@ export default function ConnectionRow({ connection, proxyPools, isOAuth, isFirst
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [modelLockUntil]);
+  }, [modelLockUntil, connection]);
 
   // Determine effective status (override unavailable if cooldown expired)
   const effectiveStatus = (connection.testStatus === "unavailable" && !isCooldown)
@@ -177,7 +177,7 @@ export default function ConnectionRow({ connection, proxyPools, isOAuth, isFirst
             )}
             {isCooldown && connection.isActive !== false && <CooldownTimer until={modelLockUntil} />}
             {connection.lastError && connection.isActive !== false && (
-              <span className="max-w-full truncate text-xs text-red-500 sm:max-w-[300px]" title={connection.lastError}>
+              <span className="max-w-full truncate text-xs text-red-500 sm:max-w-75" title={connection.lastError}>
                 {connection.lastError}
               </span>
             )}
@@ -193,16 +193,16 @@ export default function ConnectionRow({ connection, proxyPools, isOAuth, isFirst
           </div>
           {hasAnyProxy && (
             <div className="mt-1 flex items-center gap-2 flex-wrap">
-              <span className="max-w-full truncate text-[11px] text-text-muted sm:max-w-[420px]" title={proxyDisplayText}>
+              <span className="max-w-full truncate text-[11px] text-text-muted sm:max-w-105" title={proxyDisplayText}>
                 {proxyDisplayText}
               </span>
               {maskedProxyUrl && (
-                <code className="max-w-full truncate rounded bg-black/5 px-1 py-0.5 font-mono text-[10px] text-text-muted dark:bg-white/5 sm:max-w-[260px]">
+                <code className="max-w-full truncate rounded bg-black/5 px-1 py-0.5 font-mono text-[10px] text-text-muted dark:bg-white/5 sm:max-w-65">
                   {maskedProxyUrl}
                 </code>
               )}
               {noProxyText && (
-                <span className="max-w-full truncate text-[11px] text-text-muted sm:max-w-[320px]" title={noProxyText}>
+                <span className="max-w-full truncate text-[11px] text-text-muted sm:max-w-80" title={noProxyText}>
                   no_proxy: {noProxyText}
                 </span>
               )}
@@ -226,7 +226,7 @@ export default function ConnectionRow({ connection, proxyPools, isOAuth, isFirst
                 <span className="text-[10px] leading-tight">Proxy</span>
               </button>
               {showProxyDropdown && (
-                <div className="absolute right-0 top-full z-50 mt-1 max-w-[78vw] min-w-[160px] rounded-lg border border-border bg-bg py-1 shadow-lg">
+                <div className="absolute right-0 top-full z-50 mt-1 max-w-312 min-w-40 rounded-lg border border-border bg-bg py-1 shadow-lg">
                   <button
                     onClick={() => handleSelectProxy("__none__")}
                     className={`w-full text-left px-3 py-1.5 text-sm hover:bg-black/5 dark:hover:bg-white/5 ${!boundProxyPoolId ? "text-primary font-medium" : "text-text-main"}`}
@@ -316,3 +316,8 @@ ConnectionRow.propTypes = {
     provider: PropTypes.string,
   }),
 };
+
+
+
+
+

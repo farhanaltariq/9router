@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   AreaChart,
   Area,
@@ -66,7 +66,31 @@ export default function PxpipeClient() {
   const [windowId, setWindowId] = useState("last7d");
   const [loading, setLoading] = useState(true);
 
-  const refresh = useCallback(async () => {
+  // Mount: fetch once. Handler below re-runs the same logic on demand.
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [statusRes, statsRes, logsRes] = await Promise.all([
+          fetch("/api/pxpipe/status", { headers: { "Cache-Control": "no-store" } }),
+          fetch("/api/pxpipe/stats"),
+          fetch("/api/pxpipe/logs?limit=50"),
+        ]);
+        setStatus(await statusRes.json());
+        setStats(await statsRes.json());
+        setLogs(await logsRes.json());
+        const healthRes = await fetch("/api/pxpipe/health", { method: "POST" });
+        setHealth(await healthRes.json());
+      } catch {
+        /* sections render placeholders */
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const refresh = async () => {
     setLoading(true);
     try {
       const [statusRes, statsRes, logsRes] = await Promise.all([
@@ -84,11 +108,7 @@ export default function PxpipeClient() {
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  };
 
   const w = stats?.windows?.[windowId];
   const statusLabel = !status
@@ -281,3 +301,4 @@ export default function PxpipeClient() {
     </div>
   );
 }
+

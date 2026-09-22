@@ -15,8 +15,7 @@ function headers(config, token) {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
-
-export default {
+const __default = {
   buildRequest({ config, action, requestId, rawBody, contentType, token }) {
     const base = config.baseUrl.replace(/\/$/, "");
 
@@ -37,3 +36,7 @@ export default {
     };
   },
 };
+
+export default __default;
+;
+

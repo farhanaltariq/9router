@@ -1,5 +1,6 @@
 /* source() sets scan base to src/ for both webpack + Turbopack; auto-detection still skips binaries + gitignore */
-@import "tailwindcss" source("../../");
+@import "tailwindcss";
+@source "../../";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -194,6 +195,19 @@ select {
   --shadow-elevated: var(--shadow-elevated);
   --shadow-elev: var(--shadow-elev);
   --shadow-focus: var(--shadow-focus);
+
+  /* Landing-page brand tokens (marketing only) */
+  --color-landing-bg: #181411;
+  --color-landing-surface: #23180f;
+  --color-landing-surface-2: #120f0d;
+  --color-landing-border: #3a2f27;
+  --color-landing-border-strong: #181411;
+  --color-landing-orange: #f97815;
+  --color-landing-orange-hover: #e0650a;
+
+  /* Chat UI tokens */
+  --color-chat-bg: #212121;
+  --color-chat-bubble: #2f2f2f;
 
   /* Font - Inter primary, Apple system fallback */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, sans-serif;
@@ -602,3 +616,4 @@ button:disabled,
   border-top: 1px solid var(--color-border);
   margin: 1.5rem 0;
 }
+

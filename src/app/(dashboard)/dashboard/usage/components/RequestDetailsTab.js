@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Card from "@/shared/components/Card";
 import Button from "@/shared/components/Button";
 import Drawer from "@/shared/components/Drawer";
@@ -66,7 +66,7 @@ function CollapsibleSection({ title, children, defaultOpen = false, icon = null 
           <span className="font-semibold text-sm text-text-main">{title}</span>
         </div>
         <span className={cn(
-          "material-symbols-outlined text-[20px] text-text-muted transition-transform duration-200",
+          "material-symbols-outlined text-5 text-text-muted transition-transform duration-200",
           isOpen ? "rotate-90" : ""
         )}>
           chevron_right
@@ -118,49 +118,47 @@ export default function RequestDetailsTab() {
     endDate: ""
   });
 
-  const fetchProviders = useCallback(async () => {
-    try {
-      const res = await fetch("/api/usage/providers");
-      const data = await res.json();
-      setProviders(data.providers || []);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch("/api/usage/providers");
+        const data = await res.json();
+        setProviders(data.providers || []);
 
-      const cache = await fetchProviderNames();
-      setProviderNameCache(cache.providerNameCache);
-    } catch (error) {
-      console.error("Failed to fetch providers:", error);
-    }
+        const cache = await fetchProviderNames();
+        setProviderNameCache(cache.providerNameCache);
+      } catch (error) {
+        console.error("Failed to fetch providers:", error);
+      }
+    };
+    load();
   }, []);
 
-  const fetchDetails = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        pageSize: pagination.pageSize.toString()
-      });
-      if (filters.provider) params.append("provider", filters.provider);
-      if (filters.startDate) params.append("startDate", filters.startDate);
-      if (filters.endDate) params.append("endDate", filters.endDate);
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          page: pagination.page.toString(),
+          pageSize: pagination.pageSize.toString()
+        });
+        if (filters.provider) params.append("provider", filters.provider);
+        if (filters.startDate) params.append("startDate", filters.startDate);
+        if (filters.endDate) params.append("endDate", filters.endDate);
 
-      const res = await fetch(`/api/usage/request-details?${params}`);
-      const data = await res.json();
+        const res = await fetch(`/api/usage/request-details?${params}`);
+        const data = await res.json();
 
-      setDetails(data.details || []);
-      setPagination(prev => ({ ...prev, ...data.pagination }));
-    } catch (error) {
-      console.error("Failed to fetch request details:", error);
-    } finally {
-      setLoading(false);
-    }
+        setDetails(data.details || []);
+        setPagination(prev => ({ ...prev, ...data.pagination }));
+      } catch (error) {
+        console.error("Failed to fetch request details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, [pagination.page, pagination.pageSize, filters]);
-
-  useEffect(() => {
-    fetchProviders();
-  }, [fetchProviders]);
-
-  useEffect(() => {
-    fetchDetails();
-  }, [fetchDetails]);
 
   const handleViewDetail = (detail) => {
     setSelectedDetail(detail);
@@ -249,7 +247,7 @@ export default function RequestDetailsTab() {
 
       <Card padding="none">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[880px]">
+          <table className="w-full min-w-220">
             <thead>
               <tr className="border-b border-black/5 dark:border-white/5">
                 <th className="text-left p-4 text-sm font-semibold text-text-main">Timestamp</th>
@@ -268,7 +266,7 @@ export default function RequestDetailsTab() {
                 <tr>
                   <td colSpan="7" className="p-8 text-center text-text-muted">
                     <div className="flex items-center justify-center gap-2">
-                      <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                      <span className="material-symbols-outlined animate-spin text-5">progress_activity</span>
                       Loading...
                     </div>
                   </td>
@@ -288,10 +286,10 @@ export default function RequestDetailsTab() {
                     <td className="whitespace-nowrap p-4 text-sm text-text-main">
                       {new Date(detail.timestamp).toLocaleString()}
                     </td>
-                    <td className="max-w-[260px] truncate p-4 font-mono text-sm text-text-main">
+                    <td className="max-w-65 truncate p-4 font-mono text-sm text-text-main">
                       {detail.model}
                     </td>
-                    <td className="max-w-[180px] truncate p-4 text-sm text-text-main">
+                    <td className="max-w-45 truncate p-4 text-sm text-text-main">
                        <span className="font-medium">
                          {getProviderName(detail.provider, providerNameCache)}
                        </span>
@@ -457,14 +455,14 @@ export default function RequestDetailsTab() {
 
             <div className="space-y-4">
               <CollapsibleSection title="1. Client Request (Input)" defaultOpen={true} icon="input">
-                <pre className="max-h-[300px] max-w-full overflow-auto rounded-lg border border-black/5 bg-black/5 p-3 font-mono text-xs text-text-main dark:border-white/5 dark:bg-white/5 sm:p-4">
+                <pre className="max-h-75 max-w-full overflow-auto rounded-lg border border-black/5 bg-black/5 p-3 font-mono text-xs text-text-main dark:border-white/5 dark:bg-white/5 sm:p-4">
                   {JSON.stringify(selectedDetail.request, null, 2)}
                 </pre>
               </CollapsibleSection>
 
               {selectedDetail.providerRequest && (
                 <CollapsibleSection title="2. Provider Request (Translated)" icon="translate">
-                  <pre className="max-h-[300px] max-w-full overflow-auto rounded-lg border border-black/5 bg-black/5 p-3 font-mono text-xs text-text-main dark:border-white/5 dark:bg-white/5 sm:p-4">
+                  <pre className="max-h-75 max-w-full overflow-auto rounded-lg border border-black/5 bg-black/5 p-3 font-mono text-xs text-text-main dark:border-white/5 dark:bg-white/5 sm:p-4">
                     {JSON.stringify(selectedDetail.providerRequest, null, 2)}
                   </pre>
                 </CollapsibleSection>
@@ -472,7 +470,7 @@ export default function RequestDetailsTab() {
 
               {selectedDetail.providerResponse && (
                 <CollapsibleSection title="3. Provider Response (Raw)" icon="data_object">
-                  <pre className="max-h-[300px] max-w-full overflow-auto rounded-lg border border-black/5 bg-black/5 p-3 font-mono text-xs text-text-main dark:border-white/5 dark:bg-white/5 sm:p-4">
+                  <pre className="max-h-75 max-w-full overflow-auto rounded-lg border border-black/5 bg-black/5 p-3 font-mono text-xs text-text-main dark:border-white/5 dark:bg-white/5 sm:p-4">
                     {typeof selectedDetail.providerResponse === 'object'
                       ? JSON.stringify(selectedDetail.providerResponse, null, 2)
                       : selectedDetail.providerResponse
@@ -485,10 +483,10 @@ export default function RequestDetailsTab() {
                 {selectedDetail.response?.thinking && (
                   <div className="mb-4">
                     <h4 className="font-semibold text-text-main mb-2 flex items-center gap-2 text-xs uppercase tracking-wide opacity-70">
-                      <span className="material-symbols-outlined text-[16px]">psychology</span>
+                      <span className="material-symbols-outlined text-4">psychology</span>
                       Thinking Process
                     </h4>
-                    <pre className="max-h-[200px] max-w-full overflow-auto rounded-lg border border-amber-200 bg-amber-50 p-3 font-mono text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100 sm:p-4">
+                    <pre className="max-h-50 max-w-full overflow-auto rounded-lg border border-amber-200 bg-amber-50 p-3 font-mono text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100 sm:p-4">
                       {selectedDetail.response.thinking}
                     </pre>
                   </div>
@@ -497,7 +495,7 @@ export default function RequestDetailsTab() {
                 <h4 className="font-semibold text-text-main mb-2 text-xs uppercase tracking-wide opacity-70">
                   Content
                 </h4>
-                <pre className="max-h-[300px] max-w-full overflow-auto rounded-lg border border-black/5 bg-black/5 p-3 font-mono text-xs text-text-main dark:border-white/5 dark:bg-white/5 sm:p-4">
+                <pre className="max-h-75 max-w-full overflow-auto rounded-lg border border-black/5 bg-black/5 p-3 font-mono text-xs text-text-main dark:border-white/5 dark:bg-white/5 sm:p-4">
                   {selectedDetail.response?.content || "[No content]"}
                 </pre>
               </CollapsibleSection>
@@ -508,3 +506,5 @@ export default function RequestDetailsTab() {
     </div>
   );
 }
+
+

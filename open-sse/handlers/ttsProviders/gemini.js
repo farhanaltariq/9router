@@ -57,8 +57,7 @@ function buildPrompt(text, language) {
   if (/:\s/.test(text)) return text; // user already provided style instruction
   return language ? `Say in ${language}: ${text}` : `Say: ${text}`;
 }
-
-export default {
+const __default = {
   async synthesize(text, model, credentials, _responseFormat, opts = {}) {
     if (!credentials?.apiKey) throw new Error("No Gemini API key configured");
     const { modelId, voiceId } = parseGeminiModelVoice(model);
@@ -88,6 +87,9 @@ export default {
     return { base64: wav.toString("base64"), format: "wav" };
   },
 };
+
+export default __default;
+;
 
 // Voice fetcher — return prebuilt voices (Gemini has no list API)
 const PREBUILT_VOICES = [
@@ -126,3 +128,4 @@ const PREBUILT_VOICES = [
 export async function fetchGeminiVoices() {
   return PREBUILT_VOICES.map((v) => ({ voice_id: v.id, name: v.id, labels: { language: v.lang, gender: v.gender } }));
 }
+

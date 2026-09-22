@@ -107,8 +107,7 @@ function fromVertexOperation(json) {
   }));
   return { id, request_id: id, status: "completed", video: videos[0] || null, videos };
 }
-
-export default {
+const __default = {
   async buildRequest({ config, action, requestId, rawBody, contentType, credentials, log }) {
     if (contentType && !contentType.includes("application/json")) {
       return { error: "Vertex video requires an application/json body" };
@@ -157,3 +156,7 @@ export default {
 
   transformResponse: fromVertexOperation,
 };
+
+export default __default;
+;
+

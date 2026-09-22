@@ -31,10 +31,10 @@ export default function Select({
           disabled={disabled}
           className={cn(
             "w-full py-2.5 px-3 pr-10 text-sm text-text-main",
-            "bg-surface-2 border border-transparent rounded-[10px] appearance-none",
+            "bg-surface-2 border border-transparent rounded-2.5 appearance-none",
             "focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500/40",
             "transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed",
-            "text-[16px] sm:text-sm",
+            "text-4 sm:text-sm",
             error && "ring-1 ring-red-500 focus:ring-2 focus:ring-red-500/40 border-red-500/40",
             selectClassName
           )}
@@ -50,7 +50,7 @@ export default function Select({
           ))}
         </select>
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-text-muted">
-          <span className="material-symbols-outlined text-[20px]">expand_more</span>
+          <span className="material-symbols-outlined text-5">expand_more</span>
         </div>
       </div>
       {error && (
@@ -65,3 +65,5 @@ export default function Select({
     </div>
   );
 }
+
+

@@ -7,7 +7,7 @@
  * issues, with a hover popover for details and cooldown clearing.
  */
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/shared/components";
 import { useNotificationStore } from "@/store/notificationStore";
 
@@ -26,7 +26,9 @@ export default function ModelAvailabilityBadge() {
   const ref = useRef(null);
   const notify = useNotificationStore();
 
-  const fetchStatus = useCallback(async () => {
+  // Pure fetcher — shared by the mount effect, the polling interval, the
+  // "cooldown cleared" handler, and the popover refresh button.
+  const fetchStatus = async () => {
     try {
       const res = await fetch("/api/models/availability");
       if (res.ok) {
@@ -38,13 +40,16 @@ export default function ModelAvailabilityBadge() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   useEffect(() => {
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 30000);
-    return () => clearInterval(interval);
-  }, [fetchStatus]);
+    const run = async () => {
+      await fetchStatus();
+      const interval = setInterval(fetchStatus, 30000);
+      return () => clearInterval(interval);
+    };
+    run();
+  }, []);
 
   // Close popover on outside click
   useEffect(() => {
@@ -114,7 +119,7 @@ export default function ModelAvailabilityBadge() {
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-bg">
             <div className="flex items-center gap-2">
               <span
-                className="material-symbols-outlined text-[16px]"
+                className="material-symbols-outlined text-4"
                 style={{ color: isHealthy ? "#22c55e" : "#f59e0b" }}
               >
                 {isHealthy ? "verified" : "warning"}
@@ -183,3 +188,5 @@ export default function ModelAvailabilityBadge() {
     </div>
   );
 }
+
+

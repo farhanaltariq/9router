@@ -52,8 +52,8 @@ export default function Sidebar({ onClose }) {
         {/* Logo */}
         <div className="px-6 py-4 flex flex-col gap-2">
           <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="flex items-center justify-center size-9 rounded-[10px] bg-gradient-to-br from-brand-500 to-brand-700 shadow-[var(--shadow-warm)]">
-              <span className="material-symbols-outlined text-white text-[20px]">hub</span>
+            <div className="flex items-center justify-center size-9 rounded-2.5 bg-linear-to-br from-brand-500 to-brand-700 shadow-warm">
+              <span className="material-symbols-outlined text-white text-5">hub</span>
             </div>
             <div className="flex flex-col">
               <h1 className="text-lg font-semibold tracking-tight text-text-main">
@@ -175,7 +175,7 @@ export default function Sidebar({ onClose }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-6">
           <div className="text-center p-8">
             <div className="flex items-center justify-center size-16 rounded-full bg-red-500/20 text-red-500 mx-auto mb-4">
-              <span className="material-symbols-outlined text-[32px]">power_off</span>
+              <span className="material-symbols-outlined text-8">power_off</span>
             </div>
             <h2 className="text-xl font-semibold text-white mb-2">Server Disconnected</h2>
             <p className="text-text-muted mb-6">The proxy server has been stopped.</p>
@@ -192,3 +192,5 @@ export default function Sidebar({ onClose }) {
 Sidebar.propTypes = {
   onClose: PropTypes.func,
 };
+
+

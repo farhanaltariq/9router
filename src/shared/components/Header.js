@@ -203,7 +203,7 @@ export default function Header({ onMenuClick, showMenuButton = true }) {
                         src={crumb.image}
                         alt={crumb.label}
                         size={28}
-                        className="object-contain rounded max-w-[28px] max-h-[28px]"
+                        className="object-contain rounded max-w-7 max-h-7"
                         fallbackText={crumb.label.slice(0, 2).toUpperCase()}
                       />
                     )}
@@ -240,7 +240,7 @@ export default function Header({ onMenuClick, showMenuButton = true }) {
       <div className="flex items-center gap-1 shrink-0">
         {displayName && (loginMethod === "OIDC" || loginMethod === "SAML") && (
           <div
-            className="hidden sm:flex items-center max-w-[220px] px-3 py-1.5 rounded-full border border-border bg-surface/70 text-xs text-text-muted truncate"
+            className="hidden sm:flex items-center max-w-55 px-3 py-1.5 rounded-full border border-border bg-surface/70 text-xs text-text-muted truncate"
             title={displayName}
           >
             <span className="material-symbols-outlined text-[14px] mr-1.5 text-primary">person</span>
@@ -261,3 +261,5 @@ Header.propTypes = {
   onMenuClick: PropTypes.func,
   showMenuButton: PropTypes.bool,
 };
+
+

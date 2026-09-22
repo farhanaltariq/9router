@@ -6,7 +6,7 @@ import { Input } from "@/shared/components";
 export default function EndpointRow({ label, url, copyId, copied, onCopy, badge, actions }) {
   return (
     <div className="flex items-center gap-2">
-      <span className={`text-xs font-mono px-1.5 py-0.5 rounded shrink-0 min-w-[88px] text-center ${
+      <span className={`text-xs font-mono px-1.5 py-0.5 rounded shrink-0 min-w-22 text-center ${
           (badge === "CF" || badge === "TS") ? "bg-primary/10 text-primary" : "bg-surface-2 text-text-muted"
         }`}>{label}</span>
       <Input value={url} readOnly className="flex-1 font-mono text-sm" />
@@ -20,3 +20,5 @@ export default function EndpointRow({ label, url, copyId, copied, onCopy, badge,
     </div>
   );
 }
+
+

@@ -68,15 +68,7 @@ export default function TokenSaverClient() {
     ? CAVEMAN_LEVELS
     : CAVEMAN_LEVELS.filter((lvl) => !lvl.wenyan);
 
-  useEffect(() => {
-    const current = CAVEMAN_LEVELS.find((lvl) => lvl.id === cavemanLevel);
-    if (current?.wenyan && !isWenyanLocale) {
-      setCavemanLevel("ultra");
-      patchSetting({ cavemanLevel: "ultra" });
-    }
-  }, [isWenyanLocale, cavemanLevel]);
-
-  const patchSetting = async (patch) => {
+  const patchSetting = useCallback(async (patch) => {
     try {
       await fetch("/api/settings", {
         method: "PATCH",
@@ -86,7 +78,8 @@ export default function TokenSaverClient() {
     } catch (error) {
       console.log("Error updating setting:", error);
     }
-  };
+  }, []);
+
 
   const handleRtkEnabled = async (value) => {
     try {
@@ -333,7 +326,7 @@ export default function TokenSaverClient() {
     } finally {
       setRestartingProxy(false);
     }
-  }, [headroomStatus.running, refreshHeadroomStatus]);
+  }, [headroomStatus.running, refreshHeadroomStatus, patchSetting]);
 
   const handleCavemanLevel = (level) => {
     setCavemanLevel(level);
@@ -423,7 +416,16 @@ export default function TokenSaverClient() {
           setCodeAware(data.headroomCodeAware === true);
           setKompress(data.headroomKompress !== false);
           setCavemanEnabled(!!data.cavemanEnabled);
-          setCavemanLevel(data.cavemanLevel || "full");
+          // A wenyan level persisted from another locale can't be used here —
+          // fall back to "ultra" on load; user changes go through patchSetting.
+          const loadedLevel = data.cavemanLevel || "full";
+          const loadedWenyan = CAVEMAN_LEVELS.find((lvl) => lvl.id === loadedLevel)?.wenyan;
+          if (loadedWenyan && !isWenyanLocale) {
+            setCavemanLevel("ultra");
+            patchSetting({ cavemanLevel: "ultra" });
+          } else {
+            setCavemanLevel(loadedLevel);
+          }
           setPonytailEnabled(!!data.ponytailEnabled);
           setPonytailLevel(data.ponytailLevel || "full");
           setPxpipeEnabled(!!data.pxpipeEnabled);
@@ -435,7 +437,7 @@ export default function TokenSaverClient() {
       } catch {}
     };
     loadSettings();
-  }, [refreshHeadroomStatus, refreshPxpipeStatus, runPxpipeHealth]);
+  }, [refreshHeadroomStatus, refreshPxpipeStatus, runPxpipeHealth, patchSetting, isWenyanLocale]);
 
   const headroomRunning = !!headroomStatus.running;
   const headroomStatusLabel = headroomStatus.loading
@@ -1030,3 +1032,5 @@ export default function TokenSaverClient() {
     </div>
   );
 }
+
+
