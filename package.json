@@ -14,9 +14,7 @@
     "build:bun": "bun --bun next build --webpack",
     "start:bun": "bun ./.next/standalone/custom-server.js",
     "test": "node tests/__baseline__/run.mjs",
-    "test:update": "node tests/__baseline__/run.mjs --update",
-    "cli:pack": "npm --prefix cli run pack:cli",
-    "cli:publish": "npm --prefix cli run publish:cli"
+    "test:update": "node tests/__baseline__/run.mjs --update"
   },
   "engines": {
     "node": ">=20.9.0"

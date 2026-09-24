@@ -16,7 +16,6 @@ For an at-a-glance, human-oriented visual walkthrough, see [Developer Map](docs/
 - [Translator Engine](#translator-engine)
 - [Provider Registry](#provider-registry)
 - [Persistence Layer](#persistence-layer)
-- [CLI Launcher](#cli-launcher)
 - [Testing](#testing)
 - [Conventions & Gotchas](#conventions--gotchas)
 - [Development Commands](#development-commands)
@@ -75,12 +74,6 @@ For an at-a-glance, human-oriented visual walkthrough, see [Developer Map](docs/
 │   ├── transformer/            # Response format transformers
 │   └── utils/                  # Stream, SSE, error handling, proxy fetch
 │
-├── cli/                        # CLI launcher package (published as `9router` on npm)
-│   ├── cli.js                  # Entry point
-│   ├── src/                    # CLI source
-│   ├── hooks/                  # Lifecycle hooks
-│   └── scripts/                # Build/pack scripts
-│
 ├── tests/                      # Test suite (vitest, independent ESM package)
 │   ├── unit/                   # Unit tests
 │   ├── translator/             # Translator tests
@@ -137,14 +130,9 @@ flowchart TD
     SSE --> COMPAT
 ```
 
-### Two Published Artifacts
+### Single Published Artifact
 
-| Artifact | Location | npm Package | Purpose |
-|---|---|---|---|
-| Dashboard + Gateway | Root (`package.json`) | `9router-app` | Next.js server that does the actual routing |
-| CLI Launcher | `cli/` | `9router` | Installs/starts the server, manages the system tray |
-
-Both are versioned independently.
+The dashboard + gateway (root `package.json`, `9router-app`) is the Next.js server that does the actual routing.
 
 ---
 
@@ -342,18 +330,6 @@ Located at `src/lib/db/` with an adapter fallback chain:
 
 ---
 
-## CLI Launcher
-
-The `cli/` directory is a separate npm package (`9router`) that:
-
-- Installs and starts the9router server
-- Manages the system tray icon
-- Handles auto-updates
-
-It has its own `package.json`, version, and build process, independent of the root package.
-
----
-
 ## Testing
 
 Tests live in `tests/` as an independent ESM package using **vitest**.
@@ -429,7 +405,6 @@ tests/
 
 ### Versioning
 
-- Root and `cli/` are versioned independently
 - Changes logged in `CHANGELOG.md`
 - Commit style: Conventional Commits (`fix(translator): …`, `feat(...)`)
 
@@ -454,13 +429,6 @@ npm run build && PORT=20128 HOSTNAME=0.0.0.0 npm run start
 npm run dev:bun
 npm run build:bun
 npm run start:bun
-```
-
-### CLI Package
-
-```bash
-npm run cli:pack       # Build + npm pack from root
-cd cli && npm run dev  # Nodemon watch mode
 ```
 
 ### Docker
