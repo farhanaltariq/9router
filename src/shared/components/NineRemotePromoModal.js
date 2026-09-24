@@ -29,7 +29,7 @@ export default function NineRemotePromoModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-9999 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] fade-in" onClick={onClose} />
 
       <div className="relative w-full max-w-sm rounded-3.5 overflow-hidden shadow-elev fade-in flex flex-col bg-surface border border-border-subtle">
@@ -77,7 +77,7 @@ export default function NineRemotePromoModal({ isOpen, onClose }) {
           <div className="flex flex-col gap-3 w-full">
             {BULLETS.map(({ icon, text }) => (
               <div key={icon} className="flex items-center gap-2.5">
-                <span className="material-symbols-outlined flex-shrink-0 text-primary text-4">{icon}</span>
+                <span className="material-symbols-outlined shrink-0 text-primary text-4">{icon}</span>
                 <span className="text-xs text-text-muted">{text}</span>
               </div>
             ))}
@@ -97,5 +97,3 @@ export default function NineRemotePromoModal({ isOpen, onClose }) {
     document.body
   );
 }
-
-
