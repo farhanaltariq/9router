@@ -1,11 +1,5 @@
-import { Suspense } from "react";
-import { CardSkeleton } from "@/shared/components/Loading";
-import ProviderLimits from "../usage/components/ProviderLimits";
+import { redirect } from "next/navigation";
 
-export default function QuotaPage() {
-  return (
-    <Suspense fallback={<CardSkeleton />}>
-      <ProviderLimits />
-    </Suspense>
-  );
+export default function Page() {
+  redirect("/dashboard?tab=quota");
 }

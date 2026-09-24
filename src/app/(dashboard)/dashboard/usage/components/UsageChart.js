@@ -10,7 +10,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import Card from "@/shared/components/Card";
 
@@ -48,53 +47,70 @@ export default function UsageChart({ period = "7d" }) {
   const hasData = data.some((d) => d.tokens > 0 || d.cost > 0);
 
   return (
-    <Card className="flex min-w-0 flex-col gap-3 p-3 sm:p-4">
-      <div className="grid w-full grid-cols-2 items-center gap-1 rounded-lg border border-border bg-bg-subtle p-1 sm:w-auto sm:self-start">
-        <button
-          onClick={() => setViewMode("tokens")}
-          className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${viewMode === "tokens" ? "bg-primary text-white shadow-sm" : "text-text-muted hover:text-text hover:bg-bg-hover"}`}
-        >
-          Tokens
-        </button>
-        <button
-          onClick={() => setViewMode("cost")}
-          className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${viewMode === "cost" ? "bg-primary text-white shadow-sm" : "text-text-muted hover:text-text hover:bg-bg-hover"}`}
-        >
-          Cost
-        </button>
-      </div>
-
+    <Card
+      title="Usage"
+      icon="show_chart"
+      action={
+        <div className="flex items-center gap-0.5 text-xs">
+          {["tokens", "cost"].map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              className={`px-2 py-0.5 rounded font-medium transition-colors ${
+                viewMode === mode
+                  ? "bg-primary/10 text-primary"
+                  : "text-text-muted hover:text-text-main"
+              }`}
+            >
+              {mode === "tokens" ? "Tokens" : "Cost"}
+            </button>
+          ))}
+        </div>
+      }
+      className="min-w-0"
+    >
       {loading ? (
-        <div className="h-48 flex items-center justify-center text-text-muted text-sm">Loading...</div>
+        <div className="h-40 flex items-center justify-center text-text-muted text-sm">
+          Loading…
+        </div>
       ) : !hasData ? (
-        <div className="h-48 flex items-center justify-center text-text-muted text-sm">No data for this period</div>
+        <div className="h-40 flex items-center justify-center text-text-muted text-sm">
+          No data for this period
+        </div>
       ) : (
-        <ResponsiveContainer width="100%" height={220}>
-          <AreaChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+        <ResponsiveContainer width="100%" height={180}>
+          <AreaChart
+            data={data}
+            margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+          >
             <defs>
-              <linearGradient id="gradTokens" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="gradCost" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+              <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="5%"
+                  stopColor={viewMode === "tokens" ? "#6366f1" : "#f59e0b"}
+                  stopOpacity={0.2}
+                />
+                <stop
+                  offset="95%"
+                  stopColor={viewMode === "tokens" ? "#6366f1" : "#f59e0b"}
+                  stopOpacity={0}
+                />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} />
+            <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.06} />
             <XAxis
               dataKey="label"
-              tick={{ fontSize: 10, fill: "currentColor", fillOpacity: 0.5 }}
+              tick={{ fontSize: 10, fillOpacity: 0.4 }}
               tickLine={false}
               axisLine={false}
               interval="preserveStartEnd"
             />
             <YAxis
-              tick={{ fontSize: 10, fill: "currentColor", fillOpacity: 0.5 }}
+              tick={{ fontSize: 10, fillOpacity: 0.4 }}
               tickLine={false}
               axisLine={false}
               tickFormatter={viewMode === "tokens" ? fmtTokens : fmtCost}
-              width={50}
+              width={44}
             />
             <Tooltip
               contentStyle={{
@@ -104,30 +120,20 @@ export default function UsageChart({ period = "7d" }) {
                 fontSize: "12px",
               }}
               formatter={(value, name) =>
-                name === "tokens" ? [fmtTokens(value), "Tokens"] : [fmtCost(value), "Cost"]
+                name === "tokens"
+                  ? [fmtTokens(value), "Tokens"]
+                  : [fmtCost(value), "Cost"]
               }
             />
-            {viewMode === "tokens" ? (
-              <Area
-                type="monotone"
-                dataKey="tokens"
-                stroke="#6366f1"
-                strokeWidth={2}
-                fill="url(#gradTokens)"
-                dot={false}
-                activeDot={{ r: 4 }}
-              />
-            ) : (
-              <Area
-                type="monotone"
-                dataKey="cost"
-                stroke="#f59e0b"
-                strokeWidth={2}
-                fill="url(#gradCost)"
-                dot={false}
-                activeDot={{ r: 4 }}
-              />
-            )}
+            <Area
+              type="monotone"
+              dataKey={viewMode}
+              stroke={viewMode === "tokens" ? "#6366f1" : "#f59e0b"}
+              strokeWidth={1.5}
+              fill="url(#chartGrad)"
+              dot={false}
+              activeDot={{ r: 3 }}
+            />
           </AreaChart>
         </ResponsiveContainer>
       )}
@@ -138,4 +144,4 @@ export default function UsageChart({ period = "7d" }) {
 UsageChart.propTypes = {
   period: PropTypes.string,
 };
-
+ 
